@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const bcrypt = require("bcrypt");
 
 const UserSchema = new mongoose.Schema(
     {
@@ -18,12 +19,11 @@ const UserSchema = new mongoose.Schema(
         },
         password: {
             type: String,
-            required: [true, 'Password is required'],
             minlength: [3, 'Password must be at least 6 characters long']
         },
         phone: {
             type: String,
-            required: [true, 'Phone number is required'],
+            default: "",
             match: [/^\d{10,15}$/, 'Phone number must contain only digits and be between 10 to 15 characters long']
         },
         address: {
@@ -35,9 +35,6 @@ const UserSchema = new mongoose.Schema(
             type: String,
             enum: ["user", "admin"],
             default: 'user'
-        },
-        token: {
-            type: String,
         },
         deleted: {
             type: Boolean,
@@ -51,6 +48,18 @@ const UserSchema = new mongoose.Schema(
         timestamps: true
     }
 );
+// Hash password before saving
+UserSchema.pre("save", async function (next) {
+    if (!this.isModified("password")) return next();
+    const salt = await bcrypt.genSalt(10);
+    this.password = await bcrypt.hash(this.password, salt);
+    next();
+  });
+  
+  // Compare password method
+  UserSchema.methods.comparePassword = function (candidatePassword) {
+    return bcrypt.compare(candidatePassword, this.password);
+  };
 
 const User = mongoose.model("User", UserSchema, "user"); // argu3 là tên collection trong db
 
