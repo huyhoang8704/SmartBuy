@@ -15,7 +15,7 @@ JWT_SECRET=<Your JWT Secret>
 ```bash
 npm start
 ```
-API sẽ chạy tại `http://localhost:3000`.
+API sẽ chạy tại `http://localhost:4000`.
 
 ---
 

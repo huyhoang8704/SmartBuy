@@ -3,14 +3,17 @@ const app = express()
 const cors = require("cors");
 const bodyParser = require("body-parser");
 require("dotenv").config();
-const port = 3000;
+const port = 4000;
 
 const database = require('./database/mongoDB');
 database.connect();
 
 const userRoute = require('./routes/indexRoute');
 
-app.use(cors());
+app.use(cors({
+    origin: "http://localhost:3000",
+    credentials: true
+  }));
 app.use(express.json());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
