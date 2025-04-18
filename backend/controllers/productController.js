@@ -31,7 +31,8 @@ const createProduct = async (req, res) => {
 
 const getAllProducts = async (req, res) => {
     try {
-      const products = await Product.find({ deleted: false }).sort({
+
+        const products = await Product.find({ deleted: false }).sort({
         STT : "desc",
       });
       res.json(products);
@@ -82,11 +83,21 @@ const updateProduct = async (req, res) => {
     }
 };
 
+const getProductByCategory = async (req, res) => {
+    try {
+        console.log(req.params.slug)
+        const products = await Product.find({ slugCategory: req.params.slug, deleted: false });
+        res.json(products);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+};
 
 module.exports = {
     createProduct,
     getAllProducts,
     getProductBySlug,
-    updateProduct
+    updateProduct,
+    getProductByCategory
 }
   
