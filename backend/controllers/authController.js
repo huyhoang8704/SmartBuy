@@ -1,6 +1,6 @@
 const jwt = require("jsonwebtoken");
 const User = require("../models/userModel");
-
+const userService = require("../services/userService");
 
 const generateToken = (user) => {
     return jwt.sign(
@@ -14,7 +14,7 @@ const login = async (req, res) => {
     try {
         const { email, password } = req.body;
     
-        const user = await User.findOne({ email });
+        const user = await userService.findUser(email);
         if (!user) return res.status(400).json({ message: "Invalid credentials." });
     
         const isMatch = await user.comparePassword(password);
@@ -39,10 +39,11 @@ const register = async (req, res) => {
         const { name, email, password } = req.body;
     
         // Check existing
-        const existing = await User.findOne({ email });
+        const existing = await userService.findUser(email);
+        console.log(existing)
         if (existing) return res.status(400).json({ message: "Email already exists." });
     
-        const newUser = await User.create({ name, email, password });
+        const newUser = await userService.createUser({ name, email, password });
         const token = generateToken(newUser);
         console.log(token)
         res.cookie("token", token, {
