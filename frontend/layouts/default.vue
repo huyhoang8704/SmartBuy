@@ -14,18 +14,6 @@
             </n-button>
           </div>
 
-          <!-- Search Bar with rounded design -->
-          <div class="hidden md:block flex-1 max-w-md mx-6">
-            <n-input-group>
-              <n-input placeholder="Search..." round size="medium" />
-              <n-button type="primary" round>
-                <Icon
-                  name="material-symbols:search-rounded"
-                  style="color: black" />
-              </n-button>
-            </n-input-group>
-          </div>
-
           <!-- Navigation with bubbly buttons -->
           <div class="flex items-center space-x-3">
             <n-badge :value="2">
@@ -108,31 +96,7 @@
   </div>
 </template>
 
-<script setup>
-// Simple category menu
-const categoryOptions = [
-  {
-    label: "Electronics",
-    key: "electronics",
-  },
-  {
-    label: "Fashion",
-    key: "fashion",
-  },
-  {
-    label: "Home & Garden",
-    key: "home",
-  },
-  {
-    label: "Sports",
-    key: "sports",
-  },
-  {
-    label: "Books",
-    key: "books",
-  },
-];
-</script>
+<script setup></script>
 
 <style scoped>
 /* Bubbly effect styles */
