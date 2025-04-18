@@ -14,7 +14,7 @@ const login = async (req, res) => {
     try {
         const { email, password } = req.body;
     
-        const user = await userService.findUser(email);
+        const user = await userService.findUser({ email });
         if (!user) return res.status(400).json({ message: "Invalid credentials." });
     
         const isMatch = await user.comparePassword(password);
@@ -39,7 +39,7 @@ const register = async (req, res) => {
         const { name, email, password } = req.body;
     
         // Check existing
-        const existing = await userService.findUser(email);
+        const existing = await userService.findUser({ email });
         console.log(existing)
         if (existing) return res.status(400).json({ message: "Email already exists." });
     

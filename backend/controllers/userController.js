@@ -1,12 +1,11 @@
 const User = require("../models/userModel");
 
 
-
 const getUsers = async (req, res) => {
     try {
         const users = await User.find({
             deleted : false
-        });
+        }).select("name email phone address role");
         res.status(200).json(users);
     } catch (err) {
         res.status(500).json({ error: err.message });
@@ -18,7 +17,8 @@ const getUser = async (req, res) => {
         const user = await User.findOne({
             _id: req.params.id,
             deleted : false
-        }).select("name email phone address role token")
+        }).select("name email phone address role")
+        if (!user) return res.status(404).json({ message: "User not found." });
         res.status(200).json(user);
     } catch (err) {
         res.status(500).json({ error: err.message });
@@ -29,6 +29,7 @@ const updateUser = async (req, res) => {
     try {
         const id = req.params.id;
         const updateIn4 = req.body
+        if(!await User.findOne({_id : id})) return res.status(404).json({ message: "User not found." });
 
        await User.updateOne({
             _id : id
@@ -50,6 +51,7 @@ const updateUser = async (req, res) => {
 const deleteUser = async (req, res) => {
     try {
         const id = req.params.id;
+        if(!await User.findOne({_id : id})) return res.status(404).json({ message: "User not found." });
         await User.updateOne({
             _id : id
         }, {
