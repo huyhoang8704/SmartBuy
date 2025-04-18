@@ -8,14 +8,16 @@ const createProduct = async (req, res) => {
         if (existingProduct) {
             return res.status(400).json({ message: "Product name already exists" });
         } else {
-            let STT = await Product.countDocuments() + 1;
+            // let STT = await Product.countDocuments() + 1;
             const newProduct = new Product({
-                STT: STT,
+                STT: req.body.STT,
                 name: req.body.name,
                 description: req.body.description,
                 category: req.body.category,
                 price: req.body.price,
-                imageUrl: req.body.imageUrl,
+                thumbnail_url: req.body.thumbnail_url,
+                stock: req.body.stock,
+                brand_name: req.body.brand_name
             });
             const saved = await newProduct.save();
             res.status(201).json({
@@ -28,6 +30,52 @@ const createProduct = async (req, res) => {
       res.status(400).json({ error: err.message });
     }
 };
+const createManyProducts = async (req, res) => {
+    try {
+        const products = req.body.products; // Danh sách sản phẩm gửi từ client
+        const insertedProducts = [];
+        const skippedProducts = [];
+
+        for (let i = 0; i < products.length; i++) {
+            const product = products[i];
+            const existingProduct = await Product.findOne({ name: product.name });
+
+            if (existingProduct) {
+                skippedProducts.push({
+                    name: product.name,
+                    reason: "Product name already exists"
+                });
+                continue;
+            }
+
+            const newProduct = new Product({
+                STT: product.STT,
+                name: product.name,
+                description: product.description,
+                category: product.category,
+                price: product.price,
+                thumbnail_url: product.thumbnail_url,
+                stock: product.stock,
+                brand_name: product.brand_name
+            });
+
+            const savedProduct = await newProduct.save();
+            insertedProducts.push(savedProduct);
+        }
+
+        res.status(201).json({
+            message: "Product import completed",
+            insertedCount: insertedProducts.length,
+            skippedCount: skippedProducts.length,
+            insertedProducts,
+            skippedProducts
+        });
+
+    } catch (err) {
+        res.status(400).json({ error: err.message });
+    }
+};
+
 
 const getAllProducts = async (req, res) => {
     try {
@@ -98,6 +146,7 @@ module.exports = {
     getAllProducts,
     getProductBySlug,
     updateProduct,
-    getProductByCategory
+    getProductByCategory,
+    createManyProducts
 }
   

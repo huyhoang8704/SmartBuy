@@ -34,7 +34,11 @@ const ProductSchema = new mongoose.Schema({
         required: [true, 'Category is required']
     },
     stock: { type: Number, default: 0 },
-    imageUrl: {
+    thumbnail_url: {
+        type: String,
+        default: ''
+    },
+    brand_name: {
         type: String,
         default: ''
     },
