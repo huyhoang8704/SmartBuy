@@ -51,14 +51,6 @@
     <div class="flex-1 w-full p-4">
       <div class="flex flex-col md:flex-row gap-6">
         <!-- Sidebar - Bubbly design -->
-        <aside class="w-full md:w-64 flex-shrink-0">
-          <n-card class="rounded-2xl shadow-md h-full">
-            <template #header>
-              <div class="text-lg font-bold px-2">Categories</div>
-            </template>
-            <n-menu :options="categoryOptions" class="bubbly-menu" />
-          </n-card>
-        </aside>
 
         <!-- Main Content - Bubbly card -->
         <main class="flex-1">
