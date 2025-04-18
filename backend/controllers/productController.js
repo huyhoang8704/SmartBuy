@@ -50,10 +50,43 @@ const getProductBySlug = async (req, res) => {
     }
 };
 
+const updateProduct = async (req, res) => {
+    try {
+        const slugProduct = req.params.slug;
+        const updateInf = req.body;
+
+        const existingProduct = await Product.findOne({
+            slug: slugProduct,
+            deleted: false,
+        });
+
+        if (!existingProduct) {
+            return res.status(404).json({ message: "Dish not found." });
+        }
+
+        const updatedProduct = await Product.findOneAndUpdate(
+            { slug : slugProduct },
+            { $set: updateInf },
+            { new: true, fields: '-name' }
+        );
+
+        res.status(200).json({
+            message: "Update product successfully.",
+            product: updatedProduct,
+        });
+    } catch (error) {
+        res.status(400).json({
+            message: "Error!",
+            error: error.message,
+        });
+    }
+};
+
 
 module.exports = {
     createProduct,
     getAllProducts,
-    getProductBySlug
+    getProductBySlug,
+    updateProduct
 }
   
