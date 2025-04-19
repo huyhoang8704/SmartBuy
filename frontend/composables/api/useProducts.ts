@@ -1,4 +1,3 @@
-// Update useProducts to accept an object
 export const useProducts = ({
   page = 1,
   sortKey = "price",
@@ -12,6 +11,13 @@ export const useProducts = ({
   limit?: number;
   search?: string | number;
 }) => {
+  console.log("Calling useProducts with:", {
+    page,
+    sortKey,
+    sortValue,
+    limit,
+    search,
+  });
   const { data, error } = useFetch("http://localhost:4000/", {
     query: {
       page,
@@ -20,18 +26,14 @@ export const useProducts = ({
       limit,
       search,
     },
-    immediate: true,
-    onResponse({ response }) {
-      console.log(response._data);
-    },
-    onRequestError({ request }) {
-      console.log("Request Error:", request.toString());
-    },
-  });
 
-  if (error.value) {
-    console.log("Error fetching products:", error.value);
-  }
+    // onResponse({ response }) {
+    //   console.log(response._data);
+    // },
+    // onRequestError({ request }) {
+    //   console.log("Request Error:", request.toString());
+    // },
+  });
 
   return { data };
 };

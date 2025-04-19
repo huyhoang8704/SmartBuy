@@ -43,7 +43,7 @@
           </n-input-group>
 
           <!-- Suggestion dropdown -->
-          <div
+          <!-- <div
             v-if="searchSuggestions.length"
             class="absolute z-10 w-full bg-white border mt-1 rounded shadow">
             <div
@@ -53,13 +53,13 @@
               @click="searchQuery = product.name">
               {{ product.name }}
             </div>
-          </div>
+          </div> -->
         </div>
 
         <div class="flex items-center gap-3 ml-auto">
           <span class="text-sm text-gray-600">Sort by:</span>
           <n-select
-            v-model:value="sortOption"
+            v-model:value="selectedSort"
             :options="sortOptions"
             class="w-48"
             round />
@@ -67,44 +67,49 @@
       </div>
 
       <!-- Loading state -->
-      <div v-if="!productData" class="flex justify-center py-12">
+      <div v-if="productData.length === 0" class="flex justify-center py-12">
         <n-spin size="large" />
       </div>
 
       <!-- Product Grid -->
       <div
         v-else
-        class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 h-fit">
         <n-card
-          v-for="product in displayedProducts"
+          v-for="product in productData"
           :key="product._id"
-          class="rounded-2xl shadow-md transition hover:shadow-xl hover:scale-[1.01] cursor-pointer">
+          class="rounded-lg shadow-sm transition hover:shadow-md hover:scale-[1.01] cursor-pointer p-2">
+          <!-- Product Image -->
           <div
-            class="relative w-full pb-[100%] bg-gray-100 rounded-xl overflow-hidden mb-4">
+            class="w-full aspect-square bg-gray-100 rounded-md overflow-hidden mb-2">
             <img
-              v-if="product.imageUrl"
-              :src="product.imageUrl"
-              :alt="product.name"
-              class="absolute top-0 left-0 w-full h-full object-cover"
+              v-if="product.thumbnail_url"
+              :src="product.thumbnail_url"
+              :alt="product.name || 'Product image'"
+              class="w-full h-full object-cover"
               @error="(e) => handleImageError(e)" />
+
             <div
               v-else
-              class="absolute top-0 left-0 w-full h-full bg-gray-300 flex items-center justify-center">
-              <span class="text-gray-500 text-sm">No image</span>
+              class="w-full h-full bg-gray-300 flex items-center justify-center">
+              <span class="text-gray-500 text-xs">No image</span>
             </div>
           </div>
-          <div>
-            <h3 class="text-lg font-semibold text-gray-800 truncate">
-              {{ product.name }}
+
+          <!-- Product Info -->
+          <div class="space-y-1 min-h-[90px] flex flex-col justify-between">
+            <h3
+              class="text-sm font-semibold text-gray-800 truncate min-h-[1.25rem]">
+              {{ product.name || "Unnamed Product" }}
             </h3>
-            <p class="text-gray-600 text-sm mt-1 truncate">
-              {{ product.description }}
+            <p class="text-gray-600 text-xs mt-0.5 truncate min-h-[1.75rem]">
+              {{ product.description || "No description available." }}
             </p>
-            <div class="flex justify-between items-center mt-3">
-              <span class="text-red-500 font-bold">
-                {{ formatPrice(product.price) }}
+            <div class="flex justify-between items-center mt-1">
+              <span class="text-red-500 font-semibold text-xs">
+                {{ product.price ? formatPrice(product.price) : "N/A" }}
               </span>
-              <n-button size="small" type="primary" round>Add to Cart</n-button>
+              <n-button size="small" type="primary" round>Add</n-button>
             </div>
           </div>
         </n-card>
@@ -112,15 +117,15 @@
 
       <!-- Empty state -->
       <div
-        v-if="productData && displayedProducts.length === 0"
+        v-if="productData.length && productData.length === 0"
         class="text-center py-12">
         <p class="text-gray-500">No products found matching your filters</p>
       </div>
 
       <!-- Pagination -->
       <div
-        v-if="productData && displayedProducts.length > 0"
-        class="flex justify-center pt-6">
+        v-if="productData.length && productData.length > 0"
+        class="flex justify-center">
         <n-pagination
           v-model:page="currentPage"
           :page-count="pageCount"
@@ -136,43 +141,86 @@
 </template>
 
 <script setup>
-import { ref, computed } from "vue";
+import { ref, computed, watch, onMounted } from "vue";
 import { useProducts } from "~/composables/api/useProducts";
 
+// State variables
 const productData = ref([]);
+const pageCount = ref(0);
+const searchQuery = ref("");
+const selectedCategory = ref("all");
+const selectedSort = ref("price-desc");
+const currentPage = ref(1);
+const pageSize = ref(8);
 
-const getProductData = () => {
-  const { data } = useProducts({
-    page: 2,
-    limit: 8,
+// Sort options based on API parameters (sortKey: "price" or "rating", sortValue: "asc" or "desc")
+const sortOptions = [
+  { label: "Price: Low to High", value: "price-asc" },
+  { label: "Price: High to Low", value: "price-desc" },
+  { label: "Rating: Low to High", value: "rating-asc" },
+  { label: "Rating: High to Low", value: "rating-desc" },
+];
+
+// Split the selected sort option into sortKey and sortValue
+const sortParams = computed(() => {
+  const [key, value] = selectedSort.value.split("-");
+  return { sortKey: key, sortValue: value };
+});
+
+// Fetch products from API
+const fetchProducts = async () => {
+  console.log("Calling fetchProducts");
+  const { data } = await useProducts({
+    page: currentPage.value,
+    limit: pageSize.value,
+    sortKey: sortParams.value.sortKey,
+    sortValue: sortParams.value.sortValue,
+    search: searchQuery.value,
   });
 
-  // Create a watcher that updates productData when data changes
-  watch(
-    data,
-    (newValue) => {
-      if (newValue) {
-        productData.value = newValue;
-      }
-    },
-    { immediate: true }
-  );
+  watch(data, (newValue) => {
+    if (newValue) {
+      productData.value = newValue.products;
+      pageCount.value = newValue.totalPages || 1;
+    }
+  });
 };
 
+// Watch for changes that require data refetching
+watch(
+  [currentPage, pageSize, selectedSort, searchQuery],
+  (
+    [newPage, newLimit, newSort, newSearch],
+    [oldPage, oldLimit, oldSort, oldSearch]
+  ) => {
+    // Only trigger if search is empty or long enough
+    if (
+      typeof newSearch === "string" &&
+      (newSearch.length > 2 || newSearch === "")
+    ) {
+      if (
+        newLimit !== oldLimit ||
+        newSearch !== oldSearch ||
+        newSort !== oldSort
+      ) {
+        currentPage.value = 1; // Reset page if any of those change
+      }
+      fetchProducts();
+    }
+  },
+  { immediate: true }
+);
+// Initial data load
 onMounted(() => {
-  getProductData();
+  fetchProducts();
 });
-const searchQuery = ref("");
 
 // Get unique categories from the data
 const uniqueCategories = computed(() => {
-  if (!productData.value) return [];
+  if (!productData.value.length) return [];
 
   // Extract unique categories from products
-  const categories = [
-    ...new Set(productData.value.map((product) => product.category)),
-  ];
-  return categories;
+  return [...new Set(productData.value.map((product) => product.category))];
 });
 
 // For the category dropdown selector
@@ -202,109 +250,14 @@ const menuItems = computed(() => {
   ];
 });
 
-// Sort options
-const sortOptions = [
-  { label: "Price: Low to High", value: "price-asc" },
-  { label: "Price: High to Low", value: "price-desc" },
-  { label: "Name: A to Z", value: "name-asc" },
-  { label: "Name: Z to A", value: "name-desc" },
-];
-
-// State variables
-const selectedCategory = ref("all");
-const sortOption = ref("price-asc");
-const currentPage = ref(1);
-const pageSize = ref(8);
-
 // Handle category selection from sidebar menu
 const onCategorySelect = (key) => {
   selectedCategory.value = key || "all";
 };
 
-function removeAccents(str) {
-  return str
-    .normalize("NFD") // split letters and diacritics
-    .replace(/[\u0300-\u036f]/g, "") // remove diacritics
-    .replace(/đ/g, "d")
-    .replace(/Đ/g, "D");
-}
-
-// Filter products based on selections
-const filteredProducts = computed(() => {
-  if (!productData.value) return [];
-
-  let result = [...productData.value];
-
-  // Filter by category
-  if (selectedCategory.value !== "all") {
-    result = result.filter(
-      (product) => product.category === selectedCategory.value
-    );
-  }
-
-  // Filter by search query (with accent-insensitive match)
-  if (searchQuery.value.trim() !== "") {
-    const query = removeAccents(searchQuery.value.trim().toLowerCase());
-
-    result = result.filter((product) => {
-      const name = removeAccents(product.name.toLowerCase());
-      const description = removeAccents(
-        product.description?.toLowerCase() || ""
-      );
-      return name.includes(query) || description.includes(query);
-    });
-  }
-
-  // Sort
-  result.sort((a, b) => {
-    switch (sortOption.value) {
-      case "price-asc":
-        return a.price - b.price;
-      case "price-desc":
-        return b.price - a.price;
-      case "name-asc":
-        return a.name.localeCompare(b.name);
-      case "name-desc":
-        return b.name.localeCompare(a.name);
-      default:
-        return 0;
-    }
-  });
-
-  return result;
-});
-
-const searchSuggestions = computed(() => {
-  if (!searchQuery.value.trim()) return [];
-
-  const query = removeAccents(searchQuery.value.trim().toLowerCase());
-
-  return productData.value
-    .filter((product) => {
-      const name = removeAccents(product.name.toLowerCase());
-      return name.includes(query);
-    })
-    .slice(0, 5); // Limit to 5 suggestions
-});
-
-// Calculate total pages
-const pageCount = computed(() => {
-  if (!filteredProducts.value) return 1;
-  return Math.ceil(filteredProducts.value.length / pageSize.value);
-});
-
-// Get products for current page
-const displayedProducts = computed(() => {
-  if (!filteredProducts.value) return [];
-
-  const startIndex = (currentPage.value - 1) * pageSize.value;
-  return filteredProducts.value.slice(startIndex, startIndex + pageSize.value);
-});
-
 // Update page when page size changes
 const onPageSizeChange = (size) => {
   pageSize.value = size;
-  currentPage.value = 1; // Reset to first page
 };
 
 // Format price to Vietnamese currency
