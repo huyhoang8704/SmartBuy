@@ -1,0 +1,70 @@
+const Order = require("../models/orderModel");
+const Cart = require("../models/cartModel");
+const Product = require("../models/productModel");
+
+const createOrderFromSelectedCartItems = async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    const selectedItems = req.body.selectedItems;
+
+    if (!Array.isArray(selectedItems) || selectedItems.length === 0) {
+      return res.status(400).json({ message: "No items selected" });
+    }
+
+    // 1. Lấy giỏ hàng người dùng
+    const cart = await Cart.findOne({ userId });
+    if (!cart || cart.items.length === 0) {
+      return res.status(400).json({ message: "Cart is empty" });
+    }
+
+    // 2. Lấy thông tin sản phẩm từ DB
+    const productIds = selectedItems.map(item => item.productId);
+    const products = await Product.find({ _id: { $in: productIds } });
+
+    // 3. Tạo orderItems (có giá)
+    const orderItems = selectedItems.map(item => {
+      const product = products.find(p => p._id.toString() === item.productId);
+      return {
+        productId: item.productId,
+        quantity: item.quantity,
+        price: product.price
+      };
+    });
+
+    // 4. Tính tổng tiền
+    const totalAmount = orderItems.reduce(
+      (sum, item) => sum + item.quantity * item.price,
+      0
+    );
+
+    // 5. Tạo order
+    const newOrder = await Order.create({
+      userId,
+      items: orderItems,
+      totalAmount,
+      paymentMethod: req.body.paymentMethod || "cash"
+    });
+
+    // 6. Xóa các sản phẩm đã mua khỏi cart
+    const remainingCartItems = cart.items.filter(cartItem =>
+      !selectedItems.some(sel => sel.productId === cartItem.productId.toString())
+    );
+
+    cart.items = remainingCartItems;
+    cart.updatedAt = new Date();
+    await cart.save();
+
+    res.status(201).json({
+      message: "Order created from selected cart items successfully",
+      order: newOrder
+    });
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Failed to create order", error });
+  }
+};
+
+module.exports = { 
+    createOrderFromSelectedCartItems 
+};
