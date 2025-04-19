@@ -76,10 +76,39 @@ const updateCart = async (req, res) => {
     }
   };
   
+  const removeProductFromCart = async (req, res) => {
+    const userId = req.body.userId
+    const { productId } = req.params;
   
+    try {
+      const cart = await Cart.findOne({ userId });
+      if (!cart) {
+        return res.status(404).json({ message: "Cart not found" });
+      }
+  
+      const itemIndex = cart.items.findIndex(item =>
+        item.productId.equals(productId)
+      );
+  
+      if (itemIndex === -1) {
+        return res.status(404).json({ message: "Product not found in cart" });
+      }
+  
+      // Xóa sản phẩm khỏi mảng items
+      cart.items.splice(itemIndex, 1);
+      cart.updatedAt = new Date();
+  
+      const updatedCart = await cart.save();
+      res.json(updatedCart);
+  
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
+  };  
 
 module.exports = {
     addProductToCart,
     getCartbyUserId,
-    updateCart
+    updateCart,
+    removeProductFromCart,
 };
