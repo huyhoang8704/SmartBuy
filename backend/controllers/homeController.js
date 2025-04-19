@@ -15,6 +15,7 @@ const index = async (req, res) => {
     };
 
     if(req.query.sortKey && req.query.sortValue){
+        delete sort.STT;
         sort[req.query.sortKey] = req.query.sortValue
     }
     // Pagination
@@ -54,6 +55,7 @@ const getProductByCategory = async (req, res) => {
     };
 
     if(req.query.sortKey && req.query.sortValue){
+        delete sort.STT;
         sort[req.query.sortKey] = req.query.sortValue
     }
     // Pagination
