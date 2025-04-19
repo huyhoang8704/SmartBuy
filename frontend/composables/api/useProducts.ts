@@ -1,22 +1,37 @@
-export const useProducts = () => {
-  const { data, error } = useFetch("http://localhost:4000/product", {
-    // Ensure immediate fetching
-    immediate: true,
-    // Handle general errors
-    onResponseError({ response }) {
-      console.log("API Error:", response._data);
+// Update useProducts to accept an object
+export const useProducts = ({
+  page = 1,
+  sortKey = "price",
+  sortValue = "desc",
+  limit = 8,
+  search = "",
+}: {
+  page?: number;
+  sortKey?: string;
+  sortValue?: string;
+  limit?: number;
+  search?: string | number;
+}) => {
+  const { data, error } = useFetch("http://localhost:4000/", {
+    query: {
+      page,
+      sortKey,
+      sortValue,
+      limit,
+      search,
     },
-    // Handle request errors
+    immediate: true,
+    onResponse({ response }) {
+      console.log(response._data);
+    },
     onRequestError({ request }) {
-      console.log("Request Error:", request.toString);
+      console.log("Request Error:", request.toString());
     },
   });
 
-  // Log any errors that occur
   if (error.value) {
     console.log("Error fetching products:", error.value);
   }
 
-  // Return the data reference
   return { data };
 };

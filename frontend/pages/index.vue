@@ -139,7 +139,29 @@
 import { ref, computed } from "vue";
 import { useProducts } from "~/composables/api/useProducts";
 
-const { data: productData } = useProducts();
+const productData = ref([]);
+
+const getProductData = () => {
+  const { data } = useProducts({
+    page: 2,
+    limit: 8,
+  });
+
+  // Create a watcher that updates productData when data changes
+  watch(
+    data,
+    (newValue) => {
+      if (newValue) {
+        productData.value = newValue;
+      }
+    },
+    { immediate: true }
+  );
+};
+
+onMounted(() => {
+  getProductData();
+});
 const searchQuery = ref("");
 
 // Get unique categories from the data
