@@ -47,9 +47,39 @@ const getCartbyUserId = async (req, res) => {
       res.status(500).json({ error: err.message });
     }
   };
+
+// PUT /api/cart/:userId
+const updateCart = async (req, res) => {
+    const { productId, quantity } = req.body;
+  
+    try {
+      const cart = await Cart.findOne({ userId: req.params.userId });
+      if (!cart) return res.status(404).json({ message: "Cart not found" });
+  
+      const itemIndex = cart.items.findIndex(item => item.productId.equals(productId));
+  
+      if (itemIndex > -1) {
+        if (quantity <= 0) {
+          cart.items.splice(itemIndex, 1);
+        } else {
+          cart.items[itemIndex].quantity = quantity;
+        }
+      } else {
+        cart.items.push({ productId, quantity });
+      }
+  
+      cart.updatedAt = new Date();
+      const updated = await cart.save();
+      res.json(updated);
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
+  };
+  
   
 
 module.exports = {
     addProductToCart,
-    getCartbyUserId
+    getCartbyUserId,
+    updateCart
 };
