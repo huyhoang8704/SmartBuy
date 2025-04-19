@@ -21,7 +21,7 @@ const login = async (req, res) => {
         if (!isMatch) return res.status(400).json({ message: "Invalid credentials." });
     
         const token = generateToken(user);
-        console.log(token)
+        // console.log(token)
         res.cookie("token", token, {
             httpOnly: true,
             // secure: process.env.NODE_ENV === "production", // chỉ true khi deploy production
