@@ -31,13 +31,20 @@ const index = async (req, res) => {
         let page = parseInt(req.query.page); // Current Page
         skip = (page - 1) * limit;
     }
+    const totalItems = await Product.countDocuments();
+
+    const totalPages = Math.ceil(totalItems / limit);
 
     const products = await Product
         .find(find)
         .sort(sort)
         .limit(limit)
         .skip(skip)
-    res.status(200).json(products);
+    res.status(200).json({
+        products,
+        totalItems,
+        totalPages
+    });
 }
 
 const getProductByCategory = async (req, res) => {
@@ -71,13 +78,19 @@ const getProductByCategory = async (req, res) => {
         let page = parseInt(req.query.page); // Current Page
         skip = (page - 1) * limit;
     }
+    const totalItems = await Product.countDocuments();
+    const totalPages = Math.ceil(totalItems / limit);
 
     const products = await Product
         .find(find)
         .sort(sort)
         .limit(limit)
         .skip(skip)
-    res.status(200).json(products);
+    res.status(200).json({
+        products,
+        totalItems,
+        totalPages
+    });
 }
 
 

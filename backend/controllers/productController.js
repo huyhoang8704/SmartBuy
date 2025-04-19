@@ -103,18 +103,23 @@ const getAllProducts = async (req, res) => {
             limit = 15
         }
         let skip = 0;  // Default skip is 0
-        
         if (req.query.page) {
             let page = parseInt(req.query.page); // Current Page
             skip = (page - 1) * limit;
         }
+        const totalItems = await Product.countDocuments();
+        const totalPages = Math.ceil(totalItems / limit);
 
         const products = await Product
             .find(find)
             .sort(sort)
             .limit(limit)
             .skip(skip)
-        res.status(200).json(products);
+        res.status(200).json({
+            products,
+            totalPages,
+            totalItems
+        });
     } catch (err) {
       res.status(500).json({ error: err.message });
     }
@@ -194,13 +199,19 @@ const getProductByCategory = async (req, res) => {
             let page = parseInt(req.query.page); // Current Page
             skip = (page - 1) * limit;
         }
-    
+        const totalItems = await Product.countDocuments();
+        const totalPages = Math.ceil(totalItems / limit);
+
         const products = await Product
             .find(find)
             .sort(sort)
             .limit(limit)
             .skip(skip)
-        res.status(200).json(products);
+        res.status(200).json({
+            products,
+            totalPages,
+            totalItems
+        });
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
