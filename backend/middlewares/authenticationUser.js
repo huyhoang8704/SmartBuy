@@ -6,7 +6,6 @@ const User = require('../models/userModel');
 // Middleware xác thực JWT từ cookie
 const authenticateToken = async (req, res, next) => {
     const token = req.cookies.token; // Lấy token từ cookie
-    console.log(token)
 
     if (!token) {
         return res.status(401).json({ message: 'Bạn cần đăng nhập để truy cập tài nguyên này.' });
@@ -15,7 +14,6 @@ const authenticateToken = async (req, res, next) => {
     try {
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
         req.user = decoded;
-        console.log(decoded)
 
         const user = await User.findById(decoded.userId);
         if (!user) {
