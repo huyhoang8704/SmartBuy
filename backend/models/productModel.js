@@ -18,7 +18,8 @@ const ProductSchema = new mongoose.Schema({
     },
     description: {
         type: String,
-        trim: true
+        trim: true,
+        default: ''
     },
     price: {
         type: Number,
@@ -33,7 +34,7 @@ const ProductSchema = new mongoose.Schema({
         type: String,
         required: [true, 'Category is required']
     },
-    stock: { type: Number, default: 0 },
+    stock: { type: Number, default: 50 },
     thumbnail_url: {
         type: String,
         default: ''

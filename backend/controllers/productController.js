@@ -8,9 +8,9 @@ const createProduct = async (req, res) => {
         if (existingProduct) {
             return res.status(400).json({ message: "Product name already exists" });
         } else {
-            // let STT = await Product.countDocuments() + 1;
+            let STT = await Product.countDocuments() + 1;
             const newProduct = new Product({
-                STT: req.body.STT,
+                STT: STT,
                 name: req.body.name,
                 description: req.body.description,
                 category: req.body.category,
