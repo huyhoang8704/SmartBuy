@@ -37,7 +37,19 @@ const addProductToCart = async (req, res) => {
   }
 };
 
+// GET /api/cart/:userId
+const getCartbyUserId = async (req, res) => {
+    try {
+      const cart = await Cart.findOne({ userId: req.params.userId }).populate("items.productId");
+      if (!cart) return res.status(404).json({ message: "Cart not found" });
+      res.json(cart);
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
+  };
+  
 
 module.exports = {
-    addProductToCart
+    addProductToCart,
+    getCartbyUserId
 };
