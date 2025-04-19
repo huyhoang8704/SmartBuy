@@ -27,7 +27,7 @@
             class="w-full md:w-48"
             round />
         </div>
-        <div class="hidden md:block flex-1 max-w-md mx-6">
+        <div class="hidden md:block flex-1 max-w-md mx-6 relative">
           <n-input-group>
             <n-input
               v-model:value="searchQuery"
@@ -41,7 +41,21 @@
                 style="color: black" />
             </n-button>
           </n-input-group>
+
+          <!-- Suggestion dropdown -->
+          <div
+            v-if="searchSuggestions.length"
+            class="absolute z-10 w-full bg-white border mt-1 rounded shadow">
+            <div
+              v-for="(product, index) in searchSuggestions"
+              :key="index"
+              class="px-4 py-2 hover:bg-gray-100 cursor-pointer"
+              @click="searchQuery = product.name">
+              {{ product.name }}
+            </div>
+          </div>
         </div>
+
         <div class="flex items-center gap-3 ml-auto">
           <span class="text-sm text-gray-600">Sort by:</span>
           <n-select
@@ -185,30 +199,41 @@ const onCategorySelect = (key) => {
   selectedCategory.value = key || "all";
 };
 
+function removeAccents(str) {
+  return str
+    .normalize("NFD") // split letters and diacritics
+    .replace(/[\u0300-\u036f]/g, "") // remove diacritics
+    .replace(/đ/g, "d")
+    .replace(/Đ/g, "D");
+}
+
 // Filter products based on selections
 const filteredProducts = computed(() => {
   if (!productData.value) return [];
 
   let result = [...productData.value];
 
-  // Apply category filter
+  // Filter by category
   if (selectedCategory.value !== "all") {
     result = result.filter(
       (product) => product.category === selectedCategory.value
     );
   }
 
-  // Apply search filter
+  // Filter by search query (with accent-insensitive match)
   if (searchQuery.value.trim() !== "") {
-    const keyword = searchQuery.value.toLowerCase();
-    result = result.filter(
-      (product) =>
-        product.name.toLowerCase().includes(keyword) ||
-        product.description?.toLowerCase().includes(keyword)
-    );
+    const query = removeAccents(searchQuery.value.trim().toLowerCase());
+
+    result = result.filter((product) => {
+      const name = removeAccents(product.name.toLowerCase());
+      const description = removeAccents(
+        product.description?.toLowerCase() || ""
+      );
+      return name.includes(query) || description.includes(query);
+    });
   }
 
-  // Apply sorting
+  // Sort
   result.sort((a, b) => {
     switch (sortOption.value) {
       case "price-asc":
@@ -225,6 +250,19 @@ const filteredProducts = computed(() => {
   });
 
   return result;
+});
+
+const searchSuggestions = computed(() => {
+  if (!searchQuery.value.trim()) return [];
+
+  const query = removeAccents(searchQuery.value.trim().toLowerCase());
+
+  return productData.value
+    .filter((product) => {
+      const name = removeAccents(product.name.toLowerCase());
+      return name.includes(query);
+    })
+    .slice(0, 5); // Limit to 5 suggestions
 });
 
 // Calculate total pages
