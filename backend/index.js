@@ -3,6 +3,7 @@ const app = express()
 const cors = require("cors");
 const bodyParser = require("body-parser");
 const cookieParser = require('cookie-parser');
+const startConsumer = require("./kafka/consumer");
 require("dotenv").config();
 const port = 4000;
 
@@ -19,6 +20,9 @@ app.use(express.json());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cookieParser()); 
+
+// start consumer kafka
+startConsumer(); 
 
 userRoute(app);
 

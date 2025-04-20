@@ -19,3 +19,8 @@ API sẽ chạy tại `http://localhost:4000`.
 
 ---
 
+
+<!-- 
+docker compose down --volumes --remove-orphans
+docker compose up --build
+ -->

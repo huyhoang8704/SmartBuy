@@ -1,0 +1,20 @@
+# base image
+FROM node:16
+
+# app directory
+WORKDIR /app
+
+# copy files
+COPY package*.json ./
+
+# install dependencies
+RUN npm install
+
+# copy all source code
+COPY . .
+
+# expose port
+EXPOSE 4000
+
+# start app
+CMD ["npm", "start"]
