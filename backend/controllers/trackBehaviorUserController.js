@@ -12,15 +12,17 @@ const trackBehaviorUser = async (req, res) => {
       const behavior = new UserBehavior({ userId, productId, action, keyword });
       await behavior.save();
   
-      await produceEvent("user-behavior", {
-        userId,
-        productId,
-        action,
-        keyword,
-        timestamp: new Date(),
-      });
+      // await produceEvent("user-behavior", {
+      //   userId,
+      //   productId,
+      //   action,
+      //   keyword,
+      //   timestamp: new Date(),
+      // });
   
-      res.status(201).json({ message: "Behavior tracked successfully" });
+      res.status(201).json({ message: "Behavior tracked successfully",
+        behavior
+       });
     } catch (err) {
       console.error(err);
       res.status(500).json({ message: "Server error" });

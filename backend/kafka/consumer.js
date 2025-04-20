@@ -1,18 +1,24 @@
-const kafka = require("./kafkaClient");
+// const kafka = require("./kafkaClient");
 
-const consumer = kafka.consumer({ groupId: "recommendation-group" });
+// const consumer = kafka.consumer({ groupId: "recommendation-group" });
 
-const startConsumer = async () => {
-  await consumer.connect();
-  await consumer.subscribe({ topic: "user-behavior", fromBeginning: false });
+// const UserBehavior = require("../models/UserBehaviorModel");
 
-  await consumer.run({
-    eachMessage: async ({ topic, partition, message }) => {
-      const event = JSON.parse(message.value.toString());
-      console.log("📥 Behavior event received:abc", event);
-      // TODO: save to DB / push to model / redis queue, v.v...
-    },
-  });
-};
+// const startConsumer = async () => {
+//   await consumer.connect();
+//   await consumer.subscribe({ topic: "user-behavior", fromBeginning: false });
 
-module.exports = startConsumer;
+//   await consumer.run({
+//     eachMessage: async ({ topic, partition, message }) => {
+//       const event = JSON.parse(message.value.toString());
+//       console.log("📥 Behavior event received:", event);
+//       // TODO: save to DB / push to model / redis queue, v.v...
+//       const behavior = new UserBehavior(event);
+//       await behavior.save();
+
+//       console.log("✅ Saved to MongoDB");
+//     },
+//   });
+// };
+
+// module.exports = startConsumer;
