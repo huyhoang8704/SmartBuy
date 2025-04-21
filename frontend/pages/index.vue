@@ -1,8 +1,8 @@
 <template>
-  <div class="w-full h-full flex flex-col md:flex-row gap-6">
-    <!-- Sidebar -->
-    <aside class="w-full md:w-64 flex-shrink-0">
-      <n-card class="rounded-2xl shadow-md h-full">
+  <div class="w-full min-h-screen flex flex-col md:flex-row gap-6">
+    <!-- Sidebar (Sticky, height fit to content) -->
+    <aside class="w-full md:w-64 flex-shrink-0 sticky top-30 z-5 self-start">
+      <n-card class="rounded-2xl shadow-md">
         <template #header>
           <div class="text-lg font-bold px-2">Categories</div>
         </template>
@@ -26,34 +26,6 @@
             placeholder="Category"
             class="w-full md:w-48"
             round />
-        </div>
-        <div class="hidden md:block flex-1 max-w-md mx-6 relative">
-          <n-input-group>
-            <n-input
-              v-model:value="searchQuery"
-              placeholder="Search..."
-              round
-              size="medium" />
-
-            <n-button type="primary" round>
-              <Icon
-                name="material-symbols:search-rounded"
-                style="color: black" />
-            </n-button>
-          </n-input-group>
-
-          <!-- Suggestion dropdown -->
-          <!-- <div
-            v-if="searchSuggestions.length"
-            class="absolute z-10 w-full bg-white border mt-1 rounded shadow">
-            <div
-              v-for="(product, index) in searchSuggestions"
-              :key="index"
-              class="px-4 py-2 hover:bg-gray-100 cursor-pointer"
-              @click="searchQuery = product.name">
-              {{ product.name }}
-            </div>
-          </div> -->
         </div>
 
         <div class="flex items-center gap-3 ml-auto">
@@ -80,7 +52,6 @@
         <template v-for="product in productsData" :key="product._id">
           <n-card
             class="rounded-lg shadow-sm transition hover:shadow-md hover:scale-[1.01] cursor-pointer p-2">
-            <!-- Product Image -->
             <div
               class="w-full aspect-square bg-gray-100 rounded-md overflow-hidden mb-2">
               <img
@@ -111,7 +82,6 @@
                 {{ product.description || "No description available." }}
               </p>
 
-              <!-- Product Rating -->
               <n-rate
                 :value="product.rating || 0"
                 readonly
@@ -135,7 +105,6 @@
         </template>
       </div>
 
-      <!-- Empty state -->
       <div
         v-if="productsData.length && productsData.length === 0"
         class="text-center py-12">
@@ -167,7 +136,7 @@ const productsData = ref([]);
 const pageCount = ref(0);
 const searchQuery = ref("");
 const selectedCategory = ref("all");
-const selectedSort = ref("price-desc");
+const selectedSort = ref("rating-desc");
 const currentPage = ref(1);
 const pageSize = ref(16);
 const cart = useCartStore();
