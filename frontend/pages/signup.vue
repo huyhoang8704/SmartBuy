@@ -9,73 +9,80 @@
           <p class="text-gray-600 mt-2">Sign up for a new MyShop account</p>
         </div>
 
-        <n-form>
-          <!-- Name Field -->
-          <n-form-item label="Full Name">
-            <n-input
-              v-model:value="fullName"
-              type="text"
-              placeholder="Enter your full name"
+        <!-- Loading Spinner Wrap -->
+        <n-spin
+          :show="loading"
+          size="large"
+          class="absolute inset-0 flex items-center justify-center bg-gray-50 bg-opacity-70">
+          <n-form>
+            <!-- Name Field -->
+            <n-form-item label="Full Name">
+              <n-input
+                v-model:value="fullName"
+                type="text"
+                placeholder="Enter your full name"
+                round
+                class="login-input" />
+            </n-form-item>
+
+            <!-- Email Field -->
+            <n-form-item label="Email">
+              <n-input
+                v-model:value="email"
+                type="email"
+                placeholder="Enter your email"
+                round
+                class="login-input" />
+            </n-form-item>
+
+            <!-- Password Field -->
+            <n-form-item label="Password">
+              <n-input
+                v-model:value="password"
+                type="password"
+                placeholder="Create a password"
+                show-password-on="click"
+                class="login-input" />
+            </n-form-item>
+
+            <!-- Confirm Password -->
+            <n-form-item label="Confirm Password">
+              <n-input
+                v-model:value="confirmPassword"
+                type="password"
+                placeholder="Confirm your password"
+                show-password-on="click"
+                class="login-input" />
+            </n-form-item>
+
+            <!-- Sign Up Button -->
+            <n-button
+              tag="a"
+              type="primary"
+              block
               round
-              class="login-input" />
-          </n-form-item>
+              color="#ff4d4f"
+              class="text-lg font-medium"
+              @click="signUp">
+              Sign Up
+            </n-button>
 
-          <!-- Email Field -->
-          <n-form-item label="Email">
-            <n-input
-              v-model:value="email"
-              type="email"
-              placeholder="Enter your email"
-              round
-              class="login-input" />
-          </n-form-item>
+            <!-- Divider -->
+            <div class="py-4 flex items-center">
+              <div class="flex-1 border-t border-gray-200" />
+              <span class="px-4 text-sm text-gray-400">OR</span>
+              <div class="flex-1 border-t border-gray-200" />
+            </div>
 
-          <!-- Password Field -->
-          <n-form-item label="Password">
-            <n-input
-              v-model:value="password"
-              type="password"
-              placeholder="Create a password"
-              show-password-on="click"
-              class="login-input" />
-          </n-form-item>
-
-          <!-- Confirm Password -->
-          <n-form-item label="Confirm Password">
-            <n-input
-              v-model:value="confirmPassword"
-              type="password"
-              placeholder="Confirm your password"
-              show-password-on="click"
-              class="login-input" />
-          </n-form-item>
-
-          <!-- Sign Up Button -->
-          <n-button
-            tag="a"
-            type="primary"
-            block
-            round
-            color="#ff4d4f"
-            class="text-lg font-medium">
-            Sign Up
-          </n-button>
-
-          <!-- Divider -->
-          <div class="py-4 flex items-center">
-            <div class="flex-1 border-t border-gray-200" />
-            <span class="px-4 text-sm text-gray-400">OR</span>
-            <div class="flex-1 border-t border-gray-200" />
-          </div>
-
-          <!-- Login Link -->
-          <div class="text-center text-gray-600">
-            Already have an account?
-            <NuxtLink to="/login">
-              <n-button text class="text-red-500">Login</n-button>
-            </NuxtLink>
-          </div>
-        </n-form>
+            <!-- Login Link -->
+            <div class="text-center text-gray-600">
+              Already have an account?
+              <NuxtLink to="/login">
+                <n-button text class="text-red-500">Login</n-button>
+              </NuxtLink>
+            </div>
+          </n-form>
+        </n-spin>
       </n-card>
     </div>
   </div>
@@ -83,6 +90,7 @@
 
 <script setup>
 import { ref } from "vue";
+import { useSignUp } from "~/composables/api/useSignUp";
 
 definePageMeta({ layout: "blank" });
 
@@ -90,6 +98,26 @@ const fullName = ref("");
 const email = ref("");
 const password = ref("");
 const confirmPassword = ref("");
+const loading = ref(false);
+
+const signUp = async () => {
+  let success = false;
+  loading.value = true;
+  if (password.value !== confirmPassword.value) {
+    alert("Password and confirm password are not matched");
+    loading.value = false;
+    return;
+  }
+  success = await useSignUp({
+    name: fullName.value,
+    email: email.value,
+    password: password.value,
+  });
+  if (success) {
+    loading.value = false;
+    navigateTo("/");
+  }
+};
 </script>
 
 <style scoped>
@@ -114,5 +142,9 @@ const confirmPassword = ref("");
 :deep(.n-form-item .n-form-item-label) {
   font-weight: 500;
   color: #4b5563;
+}
+
+.n-spin {
+  position: absolute;
 }
 </style>
