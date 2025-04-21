@@ -39,13 +39,26 @@ const trackBehaviorUser = async (req, res) => {
 
 const getBehaviorLogsByUser = async (req, res) => {
   try {
-    const  userId  = req.user.userId;
+    const userId = req.user.userId;
+    const { action, startDate, endDate } = req.query;
 
     if (!userId) {
       return res.status(400).json({ message: "userId là bắt buộc" });
     }
 
-    const logs = await UserBehavior.find({ userId }).sort({ timestamp: -1 });
+    const filter = { userId };
+
+    // Lọc theo hành động nếu có
+    if (action) {
+      filter.action = action;
+    }
+
+    const logs = await UserBehavior.find(filter)
+      .sort({ timestamp: -1 })
+      .populate({
+        path: "productId",
+        select: "name price image description stock rating",
+      });
 
     res.status(200).json({
       message: "Lấy danh sách hành vi người dùng thành công",
@@ -56,6 +69,8 @@ const getBehaviorLogsByUser = async (req, res) => {
     res.status(500).json({ message: "Lỗi server" });
   }
 };
+
+
 
 module.exports = {
     trackBehaviorUser,
