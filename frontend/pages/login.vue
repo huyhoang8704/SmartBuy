@@ -48,7 +48,8 @@
             block
             round
             color="#ff4d4f"
-            class="text-lg font-medium">
+            class="text-lg font-medium"
+            @click="logIn">
             Login
           </n-button>
 
@@ -76,42 +77,31 @@
 
 <script setup>
 import { ref } from "vue";
+import { useLogIn } from "~/composables/api/useLogIn";
 
 definePageMeta({ layout: "blank" });
 
 // Form data
 const email = ref("");
 const password = ref("");
+const loading = ref(false);
 
-// Navigation function (placeholder)
-const navigateHome = () => {
-  // This would use router.push('/') in a real implementation
-  console.log("Navigate to home");
+const logIn = async () => {
+  let success = false;
+  loading.value = true;
+  if (email.value == "" || password.value == "") {
+    console.log("Fullfull all information");
+    return;
+  }
+  success = await useLogIn({
+    email: email.value,
+    password: password.value,
+  });
+  if (success) {
+    loading.value = false;
+    navigateTo("/");
+  }
 };
-
-// Category menu kept for reference if needed
-const categoryOptions = [
-  {
-    label: "Electronics",
-    key: "electronics",
-  },
-  {
-    label: "Fashion",
-    key: "fashion",
-  },
-  {
-    label: "Home & Garden",
-    key: "home",
-  },
-  {
-    label: "Sports",
-    key: "sports",
-  },
-  {
-    label: "Books",
-    key: "books",
-  },
-];
 </script>
 
 <style scoped>

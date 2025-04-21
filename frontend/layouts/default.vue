@@ -23,9 +23,16 @@
             </n-badge> -->
             <CartButton />
 
-            <NuxtLink to="/login">
-              <n-button round color="#ff4d4f">Login</n-button>
-            </NuxtLink>
+            <n-button
+              v-if="authStore.isAuthenticated"
+              round
+              color="#ff4d4f"
+              @click="logOut">
+              Log Out
+            </n-button>
+            <n-button v-else round color="#ff4d4f" @click="logIn">
+              Log In
+            </n-button>
 
             <!-- Mobile menu toggle -->
             <n-button circle class="md:hidden">
@@ -99,6 +106,18 @@
 
 <script setup>
 import CartButton from "~/components/CartButton.vue";
+
+import { computed } from "vue";
+
+const authStore = useAuthStore();
+
+const logOut = () => {
+  authStore.logOut(); // Log out and update state
+};
+
+const logIn = () => {
+  navigateTo("/login");
+};
 </script>
 
 <style scoped>
