@@ -67,7 +67,9 @@
       </div>
 
       <!-- Loading state -->
-      <div v-if="productData.length === 0" class="flex justify-center py-12">
+      <div
+        v-if="productsData.length === 0 || productGridLoading"
+        class="flex justify-center py-12">
         <n-spin size="large" />
       </div>
 
@@ -75,64 +77,80 @@
       <div
         v-else
         class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 h-fit">
-        <n-card
-          v-for="product in productData"
-          :key="product._id"
-          class="rounded-lg shadow-sm transition hover:shadow-md hover:scale-[1.01] cursor-pointer p-2">
-          <!-- Product Image -->
-          <div
-            class="w-full aspect-square bg-gray-100 rounded-md overflow-hidden mb-2">
-            <img
-              v-if="product.thumbnail_url"
-              :src="product.thumbnail_url"
-              :alt="product.name || 'Product image'"
-              class="w-full h-full object-cover"
-              @error="(e) => handleImageError(e)" />
-
+        <template v-for="product in productsData" :key="product._id">
+          <n-card
+            class="rounded-lg shadow-sm transition hover:shadow-md hover:scale-[1.01] cursor-pointer p-2">
+            <!-- Product Image -->
             <div
-              v-else
-              class="w-full h-full bg-gray-300 flex items-center justify-center">
-              <span class="text-gray-500 text-xs">No image</span>
+              class="w-full aspect-square bg-gray-100 rounded-md overflow-hidden mb-2">
+              <img
+                v-if="product.thumbnail_url"
+                :src="product.thumbnail_url"
+                :alt="product.name || 'Product image'"
+                class="w-full h-full object-cover"
+                @error="(e) => handleImageError(e)" />
+              <div
+                v-else
+                class="w-full h-full bg-gray-300 flex items-center justify-center">
+                <span class="text-gray-500 text-xs">No image</span>
+              </div>
             </div>
-          </div>
 
-          <!-- Product Info -->
-          <div class="space-y-1 min-h-[90px] flex flex-col justify-between">
-            <h3
-              class="text-sm font-semibold text-gray-800 truncate min-h-[1.25rem]">
-              {{ product.name || "Unnamed Product" }}
-            </h3>
-            <p class="text-gray-600 text-xs mt-0.5 truncate min-h-[1.75rem]">
-              {{ product.description || "No description available." }}
-            </p>
-            <div class="flex justify-between items-center mt-1">
-              <span class="text-red-500 font-semibold text-xs">
-                {{ product.price ? formatPrice(product.price) : "N/A" }}
-              </span>
-              <n-button size="small" type="primary" round>Add</n-button>
+            <!-- Product Info -->
+            <div class="space-y-1 min-h-[90px] flex flex-col justify-between">
+              <NuxtLink
+                :to="`/product/${product.slug}`"
+                class="hover:underline">
+                <h3
+                  class="text-sm font-semibold text-gray-800 truncate min-h-[1.25rem]">
+                  {{ product.name || "Unnamed Product" }}
+                </h3>
+              </NuxtLink>
+
+              <p class="text-gray-600 text-xs mt-0.5 truncate min-h-[1.75rem]">
+                {{ product.description || "No description available." }}
+              </p>
+
+              <!-- Product Rating -->
+              <n-rate
+                :value="product.rating || 0"
+                readonly
+                size="small"
+                class="text-yellow-400" />
+
+              <div class="flex justify-between items-center mt-1">
+                <span class="text-red-500 font-semibold text-xs">
+                  {{ product.price ? formatPrice(product.price) : "N/A" }}
+                </span>
+                <n-button
+                  size="small"
+                  type="primary"
+                  round
+                  @click="handleAddToCart(product, $event)">
+                  Add
+                </n-button>
+              </div>
             </div>
-          </div>
-        </n-card>
+          </n-card>
+        </template>
       </div>
 
       <!-- Empty state -->
       <div
-        v-if="productData.length && productData.length === 0"
+        v-if="productsData.length && productsData.length === 0"
         class="text-center py-12">
         <p class="text-gray-500">No products found matching your filters</p>
       </div>
 
       <!-- Pagination -->
       <div
-        v-if="productData.length && productData.length > 0"
+        v-if="productsData.length && productsData.length > 0"
         class="flex justify-center">
         <n-pagination
           v-model:page="currentPage"
           :page-count="pageCount"
           :page-size="pageSize"
-          :page-sizes="[8, 16, 24]"
           size="large"
-          show-size-picker
           round
           @update:page-size="onPageSizeChange" />
       </div>
@@ -145,13 +163,16 @@ import { ref, computed, watch, onMounted } from "vue";
 import { useProducts } from "~/composables/api/useProducts";
 
 // State variables
-const productData = ref([]);
+const productsData = ref([]);
 const pageCount = ref(0);
 const searchQuery = ref("");
 const selectedCategory = ref("all");
 const selectedSort = ref("price-desc");
 const currentPage = ref(1);
-const pageSize = ref(8);
+const pageSize = ref(16);
+const cart = useCartStore();
+
+const productGridLoading = ref(false);
 
 // Sort options based on API parameters (sortKey: "price" or "rating", sortValue: "asc" or "desc")
 const sortOptions = [
@@ -170,6 +191,7 @@ const sortParams = computed(() => {
 // Fetch products from API
 const fetchProducts = async () => {
   console.log("Calling fetchProducts");
+  productGridLoading.value = true;
   const { data } = await useProducts({
     page: currentPage.value,
     limit: pageSize.value,
@@ -177,13 +199,9 @@ const fetchProducts = async () => {
     sortValue: sortParams.value.sortValue,
     search: searchQuery.value,
   });
-
-  watch(data, (newValue) => {
-    if (newValue) {
-      productData.value = newValue.products;
-      pageCount.value = newValue.totalPages || 1;
-    }
-  });
+  productsData.value = data.value.products;
+  pageCount.value = data.value.totalPages ?? 1;
+  productGridLoading.value = false;
 };
 
 // Watch for changes that require data refetching
@@ -217,10 +235,10 @@ onMounted(() => {
 
 // Get unique categories from the data
 const uniqueCategories = computed(() => {
-  if (!productData.value.length) return [];
+  if (!productsData.value.length) return [];
 
   // Extract unique categories from products
-  return [...new Set(productData.value.map((product) => product.category))];
+  return [...new Set(productsData.value.map((product) => product.category))];
 });
 
 // For the category dropdown selector
@@ -274,6 +292,12 @@ const handleImageError = (e) => {
     "data:image/svg+xml;charset=UTF-8,%3Csvg xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22 width%3D%22300%22 height%3D%22300%22 viewBox%3D%220 0 300 300%22%3E%3Crect fill%3D%22%23e0e0e0%22 width%3D%22300%22 height%3D%22300%22%2F%3E%3C%2Fsvg%3E";
   e.target.onerror = null;
 };
+
+// Add product to cart
+
+function handleAddToCart(product) {
+  cart.addToCart(product);
+}
 </script>
 
 <style scoped>
