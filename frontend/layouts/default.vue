@@ -16,11 +16,12 @@
 
           <!-- Navigation with bubbly buttons -->
           <div class="flex items-center space-x-3">
-            <n-badge :value="2">
+            <!-- <n-badge :value="2">
               <n-button circle color="#ff4d4f" secondary>
                 <NuxtIcon name="shopping-cart" class="h-5 w-5" />
               </n-button>
-            </n-badge>
+            </n-badge> -->
+            <CartButton />
 
             <NuxtLink to="/login">
               <n-button round color="#ff4d4f">Login</n-button>
@@ -96,7 +97,9 @@
   </div>
 </template>
 
-<script setup></script>
+<script setup>
+import CartButton from "~/components/CartButton.vue";
+</script>
 
 <style scoped>
 /* Bubbly effect styles */

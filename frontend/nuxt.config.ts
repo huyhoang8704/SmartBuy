@@ -5,7 +5,7 @@ export default defineNuxtConfig({
   ssr: true,
 
   devtools: { enabled: true },
-  modules: ["@nuxt/eslint", "@nuxt/icon"],
+  modules: ["@nuxt/eslint", "@nuxt/icon", "@pinia/nuxt"],
 
   build: {
     transpile:

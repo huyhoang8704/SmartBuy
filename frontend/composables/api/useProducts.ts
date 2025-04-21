@@ -1,4 +1,4 @@
-export const useProducts = ({
+export const useProducts = async ({
   page = 1,
   sortKey = "price",
   sortValue = "desc",
@@ -18,7 +18,7 @@ export const useProducts = ({
     limit,
     search,
   });
-  const { data, error } = useFetch("http://localhost:4000/", {
+  const { data, error } = await useFetch("http://localhost:4000/", {
     query: {
       page,
       sortKey,
@@ -27,12 +27,12 @@ export const useProducts = ({
       search,
     },
 
-    // onResponse({ response }) {
-    //   console.log(response._data);
-    // },
-    // onRequestError({ request }) {
-    //   console.log("Request Error:", request.toString());
-    // },
+    onResponse({ response }) {
+      console.log(response._data);
+    },
+    onRequestError({ request }) {
+      console.log("Request Error:", request.toString());
+    },
   });
 
   return { data };
