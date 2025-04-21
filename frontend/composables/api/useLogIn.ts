@@ -16,8 +16,9 @@ export const useLogIn = async ({
     }),
     onResponse({ response }) {
       if (response._data) {
+        console.log(response._data);
         // Store the token in localStorage
-        authStore.logIn(response._data.token);
+        authStore.logIn(response._data.token, response._data.user._id);
         success = true;
       } else {
         console.error("Login failed:", response._data);

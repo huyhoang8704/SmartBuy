@@ -1,8 +1,8 @@
 <template>
   <div class="min-h-screen bg-gray-50 flex flex-col">
     <!-- Header - Full width with minimal outer padding -->
-    <header class="w-full p-4">
-      <div class="w-full bg-white rounded-2xl shadow-lg p-4">
+    <header class="sticky top-0 z-10 w-full p-4 bg-white shadow-lg">
+      <div class="w-full bg-white rounded-2xl p-4">
         <div class="flex items-center justify-between">
           <!-- Logo with bubbly effect -->
           <div class="text-2xl font-bold">
@@ -14,13 +14,24 @@
             </n-button>
           </div>
 
+          <div class="hidden md:block flex-1 max-w-md mx-6 relative">
+            <n-input-group>
+              <n-input
+                v-model:value="searchQuery"
+                placeholder="Search..."
+                round
+                size="medium" />
+
+              <n-button type="primary" round>
+                <Icon
+                  name="material-symbols:search-rounded"
+                  style="color: black" />
+              </n-button>
+            </n-input-group>
+          </div>
+
           <!-- Navigation with bubbly buttons -->
           <div class="flex items-center space-x-3">
-            <!-- <n-badge :value="2">
-              <n-button circle color="#ff4d4f" secondary>
-                <NuxtIcon name="shopping-cart" class="h-5 w-5" />
-              </n-button>
-            </n-badge> -->
             <CartButton />
 
             <n-button
