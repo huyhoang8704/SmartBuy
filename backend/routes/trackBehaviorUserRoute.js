@@ -5,7 +5,7 @@ const router = express.Router()
 
 
 router.post('/track',controller.trackBehaviorUser)
-
+router.get('/track',controller.getBehaviorLogsByUser)
 
 
 

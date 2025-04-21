@@ -37,7 +37,28 @@ const trackBehaviorUser = async (req, res) => {
     }
 };
 
+const getBehaviorLogsByUser = async (req, res) => {
+  try {
+    const  userId  = req.user.userId;
+
+    if (!userId) {
+      return res.status(400).json({ message: "userId là bắt buộc" });
+    }
+
+    const logs = await UserBehavior.find({ userId }).sort({ timestamp: -1 });
+
+    res.status(200).json({
+      message: "Lấy danh sách hành vi người dùng thành công",
+      data: logs,
+    });
+  } catch (error) {
+    console.error("Lỗi khi lấy log:", error);
+    res.status(500).json({ message: "Lỗi server" });
+  }
+};
+
 module.exports = {
-    trackBehaviorUser
+    trackBehaviorUser,
+    getBehaviorLogsByUser
 };
 
