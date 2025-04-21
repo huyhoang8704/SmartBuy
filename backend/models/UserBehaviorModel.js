@@ -12,6 +12,14 @@ const userBehaviorSchema = new mongoose.Schema({
         type: String,
         default: "" 
     }, // dùng cho hành vi search
+    category: {
+        type: String,
+        default: ""
+    },
+    brand_name: {
+        type: String,
+        default: ""
+    },
     timestamp: { type: Date, default: Date.now },
 });
 
