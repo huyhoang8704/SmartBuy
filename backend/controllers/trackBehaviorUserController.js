@@ -71,9 +71,87 @@ const getBehaviorLogsByUser = async (req, res) => {
 };
 
 
+const aggregateBehaviorStats = async (req, res) => {
+  try {
+    const { page = 1, limit = 10 } = req.query;
+
+
+    const skip = (parseInt(page) - 1) * parseInt(limit);
+    const limitVal = parseInt(limit);
+
+    const aggregationPipeline = [
+      {
+        $group: {
+          _id: {
+            productId: "$productId",
+            action: "$action"
+          },
+          count: { $sum: 1 }
+        }
+      },
+      {
+        $lookup: {
+          from: "product",
+          localField: "_id.productId",
+          foreignField: "_id",
+          as: "product"
+        }
+      },
+      { $unwind: "$product" },
+      {
+        $project: {
+          _id: 0,
+          productId: "$_id.productId",
+          action: "$_id.action",
+          count: 1,
+          productName: "$product.name",
+          productImage: "$product.thumbnail_url"
+        }
+      },
+      { $sort: { count: -1 } },
+      { $skip: skip },
+      { $limit: limitVal }
+    ];
+
+    const stats = await UserBehavior.aggregate(aggregationPipeline);
+
+    // Get total count for pagination
+    const totalCountAggregation = await UserBehavior.aggregate([
+      {
+        $group: {
+          _id: {
+            productId: "$productId",
+            action: "$action"
+          }
+        }
+      },
+      { $count: "total" }
+    ]);
+
+    const total = totalCountAggregation[0]?.total || 0;
+
+    res.status(200).json({
+      message: "Thống kê hành vi người dùng theo sản phẩm và hành động",
+      data: stats,
+      pagination: {
+        total,
+        page: parseInt(page),
+        limit: limitVal,
+        totalPages: Math.ceil(total / limitVal)
+      }
+    });
+  } catch (error) {
+    console.error("Lỗi khi thống kê hành vi:", error);
+    res.status(500).json({ message: "Lỗi server" });
+  }
+};
+
+
+
 
 module.exports = {
     trackBehaviorUser,
-    getBehaviorLogsByUser
+    getBehaviorLogsByUser,
+    aggregateBehaviorStats
 };
 
