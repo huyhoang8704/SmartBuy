@@ -52,17 +52,22 @@ const getBehaviorLogsByUser = async (req, res) => {
     if (action) {
       filter.action = action;
     }
+    // Pagination
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const skip = (page - 1) * limit;
 
     const logs = await UserBehavior.find(filter)
       .sort({ timestamp: -1 })
       .populate({
         path: "productId",
         select: "name price image description stock rating",
-      });
+      }).skip(skip).limit(limit);
 
     res.status(200).json({
       message: "Lấy danh sách hành vi người dùng thành công",
       data: logs,
+      totalPages: Math.ceil(await UserBehavior.countDocuments(filter) / limit),
     });
   } catch (error) {
     console.error("Lỗi khi lấy log:", error);

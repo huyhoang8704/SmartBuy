@@ -78,8 +78,13 @@ const getOrderById = async (req, res) => {
 const getOrdersByUserId = async (req, res) => {
     try {
       const  userId = req.user.userId;
+
+      const limit = parseInt(req.query.limit) || 10;
+      const page = parseInt(req.query.page) || 1;
+      const skip = (page - 1) * limit;
   
-      const orders = await Order.find({ userId }).populate("items.productId").sort({ createdAt: -1 });
+      const orders = await Order.find({ userId }).populate("items.productId")
+        .skip(skip).limit(limit).sort({ createdAt: -1 });
       if(!orders) return res.status(404).json({ message: "Orders not found" });
   
       res.status(200).json({
