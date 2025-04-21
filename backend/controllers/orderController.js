@@ -89,7 +89,8 @@ const getOrdersByUserId = async (req, res) => {
   
       res.status(200).json({
         message: "Fetched orders successfully",
-        orders
+        orders,
+        totalPages: Math.ceil(orders.length / limit),
       });
     } catch (error) {
       console.error("Error fetching orders:", error);
