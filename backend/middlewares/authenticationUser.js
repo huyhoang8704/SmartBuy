@@ -5,7 +5,8 @@ const User = require('../models/userModel');
 
 // Middleware xác thực JWT từ cookie
 const authenticateToken = async (req, res, next) => {
-    const token = req.cookies.token; // Lấy token từ cookie
+    let token = ""
+    if(req.headers.authorization) token = req.headers.authorization.split(" ")[1];
 
     if (!token) {
         return res.status(401).json({ message: 'Bạn cần đăng nhập để truy cập tài nguyên này.' });
