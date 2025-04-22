@@ -4,8 +4,8 @@ const router = express.Router()
 
 
 router.post('/add-product',controller.addProductToCart)
-router.get('/:userId',controller.getCartbyUserId)
-router.put('/:userId',controller.updateCart)
+router.get('/',controller.getCartbyUserId)
+router.put('/',controller.updateCart)
 router.delete('/:productId',controller.removeProductFromCart)
 
 

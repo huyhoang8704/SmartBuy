@@ -40,7 +40,7 @@ const addProductToCart = async (req, res) => {
 // GET /api/cart/:userId
 const getCartbyUserId = async (req, res) => {
     try {
-      const cart = await Cart.findOne({ userId: req.params.userId }).populate("items.productId");
+      const cart = await Cart.findOne({ userId: req.user.userId }).populate("items.productId");
       if (!cart) return res.status(404).json({ message: "Cart not found" });
       res.json(cart);
     } catch (err) {
@@ -53,7 +53,7 @@ const updateCart = async (req, res) => {
     const { productId, quantity } = req.body;
   
     try {
-      const cart = await Cart.findOne({ userId: req.params.userId });
+      const cart = await Cart.findOne({ userId: req.user.userId });
       if (!cart) return res.status(404).json({ message: "Cart not found" });
   
       const itemIndex = cart.items.findIndex(item => item.productId.equals(productId));
