@@ -1,6 +1,8 @@
 // stores/cart.ts
 import { defineStore } from "pinia";
 
+const token = localStorage.getItem("authToken");
+
 export const useCartStore = defineStore("cart", {
   state: () => ({
     items: [] as Array<{
@@ -69,14 +71,16 @@ export const useCartStore = defineStore("cart", {
     // Fetch the cart data from the server and update the store
     async fetchCart() {
       const userId = localStorage.getItem("userId");
-      const token = localStorage.getItem("authToken");
+
       if (userId) {
-        const response = await $fetch(`http://localhost:4000/cart/${userId}`, {
+        const response = await $fetch(`http://localhost:4000/cart/`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
+          onResponse({ response }) {
+            console.log(response._data);
+          },
         });
-        console.log(response);
 
         if (response && Array.isArray(response.items)) {
           this.items = response.items.map((item) => ({
@@ -98,6 +102,9 @@ export const useCartStore = defineStore("cart", {
       if (userId) {
         await $fetch(`http://localhost:4000/cart/add-product`, {
           method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
           body: JSON.stringify({
             userId: userId,
             productId: product._id,
@@ -111,8 +118,11 @@ export const useCartStore = defineStore("cart", {
     async updateCartItem(productId: string, quantity: number) {
       const userId = localStorage.getItem("userId");
       if (userId) {
-        await $fetch(`http://localhost:4000/cart/${userId}`, {
+        await $fetch(`http://localhost:4000/cart/`, {
           method: "PUT",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
           body: JSON.stringify({
             productId,
             quantity,
@@ -127,6 +137,9 @@ export const useCartStore = defineStore("cart", {
       if (userId) {
         await $fetch(`http://localhost:4000/cart/${productId}`, {
           method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
           body: JSON.stringify({
             userId,
           }),

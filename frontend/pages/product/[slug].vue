@@ -80,7 +80,7 @@ const { data } = await useSingleProduct({ slug: route.params.slug });
 const product = data.value;
 
 const quantity = ref(1);
-
+  
 const formatPrice = (price) => {
   return new Intl.NumberFormat("vi-VN", {
     style: "currency",
