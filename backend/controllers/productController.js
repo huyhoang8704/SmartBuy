@@ -125,15 +125,27 @@ const getAllProducts = async (req, res) => {
     }
   };
 
-const getProductBySlug = async (req, res) => {
+  const getProductBySlug = async (req, res) => {
     try {
       const product = await Product.findOne({ slug: req.params.slug, deleted: false });
       if (!product) return res.status(404).json({ message: "Product not found" });
-      res.json(product);
+  
+      // Tìm các sản phẩm cùng category, loại trừ chính sản phẩm đó
+      const relatedProducts = await Product.find({
+        category: product.category,
+        _id: { $ne: product._id },
+        deleted: false
+      }).limit(10); // Giới hạn số lượng related products nếu muốn
+  
+      res.json({
+        product,
+        relatedProducts
+      });
     } catch (err) {
       res.status(500).json({ error: err.message });
     }
-};
+  };
+  
 
 const updateProduct = async (req, res) => {
     try {
