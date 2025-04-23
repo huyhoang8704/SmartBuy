@@ -83,7 +83,7 @@ const trackBehaviorUser = async (req, res) => {
     }
 
     // Đồng bộ log với MongoDB
-    await syncLogsToMongo();
+    // await syncLogsToMongo();
 
     res.status(201).json({
       message: "Behavior tracked successfully",
