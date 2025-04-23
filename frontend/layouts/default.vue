@@ -27,21 +27,23 @@
             </n-input-group>
           </div>
           <!-- Navigation with bubbly buttons -->
-          <div class="flex items-center space-x-3">
-            <CartButton />
-            <n-button
-              v-if="authStore.isAuthenticated"
-              round
-              color="#ff4d4f"
-              @click="logOut">
-              Log Out
-            </n-button>
-            <n-button v-else round color="#ff4d4f" @click="logIn">
-              Log In
-            </n-button>
+          <div class="flex items-center space-x-5 flex-row">
+            <CartButton v-if="authStore.isAuthenticated" />
+            <div>
+              <n-button
+                v-if="authStore.isAuthenticated"
+                round
+                color="#ff4d4f"
+                @click="logOut">
+                Log Out
+              </n-button>
+              <n-button v-else round color="#ff4d4f" @click="logIn">
+                Log In
+              </n-button>
+            </div>
             <!-- Mobile menu toggle -->
             <n-button circle class="md:hidden">
-              <NuxtIcon name="bars-3" class="h-5 w-5" />
+              <Icon name="ooui:user-avatar" size="large"> </Icon>
             </n-button>
           </div>
         </div>
