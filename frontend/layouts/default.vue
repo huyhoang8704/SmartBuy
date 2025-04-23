@@ -8,12 +8,10 @@
           <div class="text-2xl font-bold">
             <n-button text class="text-red-500 text-2xl font-bold rounded-full">
               <span class="flex items-center">
-                <NuxtIcon name="shopping-bag" class="h-6 w-6 mr-2" />
-                MyShop
+                <NuxtLink to="/">MyShop</NuxtLink>
               </span>
             </n-button>
           </div>
-
           <div class="hidden md:block flex-1 max-w-md mx-6 relative">
             <n-input-group>
               <n-input
@@ -21,19 +19,16 @@
                 placeholder="Search..."
                 round
                 size="medium" />
-
-              <n-button type="primary" round>
+              <n-button type="primary" round @click="navigateToSearch">
                 <Icon
                   name="material-symbols:search-rounded"
                   style="color: black" />
               </n-button>
             </n-input-group>
           </div>
-
           <!-- Navigation with bubbly buttons -->
           <div class="flex items-center space-x-3">
             <CartButton />
-
             <n-button
               v-if="authStore.isAuthenticated"
               round
@@ -44,7 +39,6 @@
             <n-button v-else round color="#ff4d4f" @click="logIn">
               Log In
             </n-button>
-
             <!-- Mobile menu toggle -->
             <n-button circle class="md:hidden">
               <NuxtIcon name="bars-3" class="h-5 w-5" />
@@ -53,17 +47,14 @@
         </div>
       </div>
     </header>
-
     <!-- Main Content Area - Full width with minimal padding -->
     <div class="flex-1 w-full p-4">
       <div class="flex flex-col md:flex-row gap-6">
         <!-- Sidebar - Bubbly design -->
-
         <!-- Main Content - Bubbly card -->
         <main class="flex-1">
           <n-card class="rounded-2xl shadow-md">
             <slot />
-
             <!-- Placeholder content -->
             <div v-if="!$slots.default" class="text-center py-12 text-gray-400">
               <NuxtIcon name="shopping-bag" class="h-16 w-16 mx-auto mb-4" />
@@ -73,7 +64,6 @@
         </main>
       </div>
     </div>
-
     <!-- Footer - Full width with minimal padding -->
     <footer class="w-full p-4">
       <div class="w-full bg-white rounded-2xl shadow-lg overflow-hidden">
@@ -86,7 +76,6 @@
               Shop the latest trends with our curated selection of products
             </p>
           </div>
-
           <!-- Quick Links -->
           <div class="bg-gray-50 p-4 rounded-xl">
             <h3 class="font-bold text-lg mb-3">Quick Links</h3>
@@ -97,7 +86,6 @@
               <n-button size="small" round ghost>Contact</n-button>
             </div>
           </div>
-
           <!-- Contact -->
           <div class="bg-gray-50 p-4 rounded-xl">
             <h3 class="font-bold text-lg mb-3">Contact Us</h3>
@@ -105,7 +93,6 @@
             <p class="text-gray-600">(123) 456-7890</p>
           </div>
         </div>
-
         <!-- Copyright -->
         <div class="bg-gray-100 py-3 px-6 text-center text-gray-500 text-sm">
           © 2025 MyShop. All rights reserved.
@@ -119,6 +106,16 @@
 import CartButton from "~/components/CartButton.vue";
 
 import { computed } from "vue";
+
+const searchQuery = ref("");
+
+const navigateToSearch = () => {
+  if (searchQuery.value.trim() === "") {
+    navigateTo("/");
+  } else {
+    navigateTo(`/search/${searchQuery.value.trim()}`);
+  }
+};
 
 const authStore = useAuthStore();
 
