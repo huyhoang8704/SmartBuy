@@ -31,9 +31,9 @@ services:
 
   redis:
     image: redis
-    container_name: redis-container
+    container_name: redis-backend
     ports:
-      - "6379:6379"
+      - "6380:6379"
     networks:
       - ecommerce-network
 
