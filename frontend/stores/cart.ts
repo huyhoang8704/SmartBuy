@@ -1,8 +1,6 @@
 // stores/cart.ts
 import { defineStore } from "pinia";
 
-const token = localStorage.getItem("authToken");
-
 export const useCartStore = defineStore("cart", {
   state: () => ({
     items: [] as Array<{
@@ -65,7 +63,7 @@ export const useCartStore = defineStore("cart", {
       // await this.clearCartAPI();
 
       // Fetch the latest cart data
-      await this.fetchCart();
+      // await this.fetchCart();
     },
 
     // Fetch the cart data from the server and update the store
@@ -75,7 +73,7 @@ export const useCartStore = defineStore("cart", {
       if (userId) {
         const response = await $fetch(`http://localhost:4000/cart/`, {
           headers: {
-            Authorization: `Bearer ${token}`,
+            Authorization: `Bearer ${localStorage.getItem("authToken")}`,
           },
           onResponse({ response }) {
             console.log(response._data);
@@ -103,7 +101,7 @@ export const useCartStore = defineStore("cart", {
         await $fetch(`http://localhost:4000/cart/add-product`, {
           method: "POST",
           headers: {
-            Authorization: `Bearer ${token}`,
+            Authorization: `Bearer ${localStorage.getItem("authToken")}`,
           },
           body: JSON.stringify({
             userId: userId,
@@ -121,7 +119,7 @@ export const useCartStore = defineStore("cart", {
         await $fetch(`http://localhost:4000/cart/`, {
           method: "PUT",
           headers: {
-            Authorization: `Bearer ${token}`,
+            Authorization: `Bearer ${localStorage.getItem("authToken")}`,
           },
           body: JSON.stringify({
             productId,
@@ -138,7 +136,7 @@ export const useCartStore = defineStore("cart", {
         await $fetch(`http://localhost:4000/cart/${productId}`, {
           method: "DELETE",
           headers: {
-            Authorization: `Bearer ${token}`,
+            Authorization: `Bearer ${localStorage.getItem("authToken")}`,
           },
           body: JSON.stringify({
             userId,
