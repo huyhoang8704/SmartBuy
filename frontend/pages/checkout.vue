@@ -6,6 +6,11 @@
     <n-space vertical size="large">
       <template v-if="cart.items.length === 0">
         <n-empty description="Giỏ hàng trống" />
+        <div class="flex justify-center mt-4">
+          <NuxtLink to="/">
+            <n-button size="medium" round>Tiếp tục mua hàng</n-button>
+          </NuxtLink>
+        </div>
       </template>
 
       <template v-else>
