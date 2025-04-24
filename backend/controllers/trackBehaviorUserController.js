@@ -8,15 +8,11 @@ const trackBehaviorUser = async (req, res) => {
       if (!userId && !action) {
         return res.status(400).json({ message: "userId và action là bắt buộc" });
       }
-      const product = await Product.findById(productId);
       const behavior = new UserBehavior({ 
         userId, 
         productId, 
         action, 
         keyword,
-        category: product.category,
-        brand_name: product.brand_name
-
       });
       await behavior.save();
   
