@@ -12,7 +12,7 @@ const trackBehaviorUser = async (req, res) => {
       return res.status(400).json({ message: "userId và action là bắt buộc" });
     }
 
-    // Chuyển productId thành mảng nếu nó là string
+    // Chuyển productId thành mảng nếu là 1 sản phẩm
     let productIds = [];
     if (Array.isArray(productId)) {
       productIds = productId;
@@ -20,46 +20,38 @@ const trackBehaviorUser = async (req, res) => {
       productIds = [productId];
     }
 
-    let behaviors = [];
+    const timestamp = new Date();
+    let events = [];
 
-    // Nếu là hành vi search không có productId
+    // Trường hợp search (không có productId)
     if (action === "search" && productIds.length === 0) {
-      const behavior = new UserBehavior({
+      const event = {
         userId,
         action,
         keyword,
-        timestamp: new Date(),
-      });
-      await behavior.save();
-      behaviors.push(behavior);
-    } else {
-      // Với các hành vi khác có productId
-      const behaviorDocs = productIds.map(pid => ({
-        userId,
-        productId: pid,
-        action,
-        keyword: action === "search" ? keyword : "",
-        timestamp: new Date(),
-      }));
-      behaviors = await UserBehavior.insertMany(behaviorDocs);
-    }
+        timestamp,
+      };
+      events.push(event);
+      await produceEvent(process.env.KAFKA_TOPIC, event);
 
-    // Nếu muốn gửi lên Kafka
-    /*
-    for (const b of behaviors) {
-      await produceEvent("user-behavior", {
-        userId: b.userId,
-        productId: b.productId,
-        action: b.action,
-        keyword: b.keyword,
-        timestamp: b.timestamp,
-      });
+    } else {
+      // Trường hợp có productId (view, addtocart, transaction)
+      for (const pid of productIds) {
+        const event = {
+          userId,
+          productId: pid,
+          action,
+          keyword: action === "search" ? keyword : "",
+          timestamp,
+        };
+        events.push(event);
+        await produceEvent(process.env.KAFKA_TOPIC, event);
+      }
     }
-    */
 
     res.status(201).json({
-      message: "Behaviors user tracked successfully",
-      behaviors,
+      message: "Behaviors sent to Kafka successfully",
+      behaviors: events,
     });
 
   } catch (err) {
