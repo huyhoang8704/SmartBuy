@@ -1,36 +1,71 @@
 const produceEvent = require("../kafka/producer");
 const UserBehavior = require("../models/userBehaviorModel");
 const Product = require("../models/productModel");
+
+
+
 const trackBehaviorUser = async (req, res) => {
-    try {
-      const { userId, productId, action, keyword } = req.body;
-  
-      if (!userId && !action) {
-        return res.status(400).json({ message: "userId và action là bắt buộc" });
-      }
-      const behavior = new UserBehavior({ 
-        userId, 
-        productId, 
-        action, 
+  try {
+    const { userId, productId, action, keyword = "" } = req.body;
+
+    if (!userId || !action) {
+      return res.status(400).json({ message: "userId và action là bắt buộc" });
+    }
+
+    // Chuyển productId thành mảng nếu nó là string
+    let productIds = [];
+    if (Array.isArray(productId)) {
+      productIds = productId;
+    } else if (productId) {
+      productIds = [productId];
+    }
+
+    let behaviors = [];
+
+    // Nếu là hành vi search không có productId
+    if (action === "search" && productIds.length === 0) {
+      const behavior = new UserBehavior({
+        userId,
+        action,
         keyword,
+        timestamp: new Date(),
       });
       await behavior.save();
-  
-      // await produceEvent("user-behavior", {
-      //   userId,
-      //   productId,
-      //   action,
-      //   keyword,
-      //   timestamp: new Date(),
-      // });
-  
-      res.status(201).json({ message: "Behavior tracked successfully",
-        behavior
-       });
-    } catch (err) {
-      console.error(err);
-      res.status(500).json({ message: "Server error" });
+      behaviors.push(behavior);
+    } else {
+      // Với các hành vi khác có productId
+      const behaviorDocs = productIds.map(pid => ({
+        userId,
+        productId: pid,
+        action,
+        keyword: action === "search" ? keyword : "",
+        timestamp: new Date(),
+      }));
+      behaviors = await UserBehavior.insertMany(behaviorDocs);
     }
+
+    // Nếu muốn gửi lên Kafka
+    /*
+    for (const b of behaviors) {
+      await produceEvent("user-behavior", {
+        userId: b.userId,
+        productId: b.productId,
+        action: b.action,
+        keyword: b.keyword,
+        timestamp: b.timestamp,
+      });
+    }
+    */
+
+    res.status(201).json({
+      message: "Behaviors user tracked successfully",
+      behaviors,
+    });
+
+  } catch (err) {
+    console.error("Error tracking behavior:", err);
+    res.status(500).json({ message: "Server error" });
+  }
 };
 
 const getBehaviorLogsByUser = async (req, res) => {
