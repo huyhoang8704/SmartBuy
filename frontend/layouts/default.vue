@@ -42,9 +42,10 @@
               </n-button>
             </div>
             <!-- Mobile menu toggle -->
-            <n-button circle class="md:hidden">
+            <!-- <n-button circle class="md:hidden">
               <Icon name="ooui:user-avatar" size="large"> </Icon>
-            </n-button>
+            </n-button> -->
+            <AvatarMenu />
           </div>
         </div>
       </div>

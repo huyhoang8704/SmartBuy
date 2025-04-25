@@ -19,7 +19,8 @@
               type="email"
               placeholder="Enter your email"
               round
-              class="login-input" />
+              class="login-input"
+              @keyup.enter="logIn" />
           </n-form-item>
 
           <!-- Password Field -->
@@ -29,7 +30,8 @@
               type="password"
               placeholder="Enter your password"
               class="login-input"
-              show-password-on="click" />
+              show-password-on="click"
+              @keyup.enter="logIn" />
           </n-form-item>
 
           <!-- Remember Me & Forgot Password -->
