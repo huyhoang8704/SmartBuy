@@ -6,24 +6,16 @@ const Product = require("../models/productModel");
 
 const trackBehaviorUser = async (req, res) => {
   try {
-    const { userId, productId, action, keyword = "" } = req.body;
+    const { userId, action, selectedItems = [], keyword = "" } = req.body;
 
     if (!userId || !action) {
       return res.status(400).json({ message: "userId và action là bắt buộc" });
     }
 
-    // Chuyển productId thành mảng nếu nó là string
-    let productIds = [];
-    if (Array.isArray(productId)) {
-      productIds = productId;
-    } else if (productId) {
-      productIds = [productId];
-    }
-
     let behaviors = [];
 
-    // Nếu là hành vi search không có productId
-    if (action === "search" && productIds.length === 0) {
+    if (action === "search" && selectedItems.length === 0) {
+      // Hành vi search
       const behavior = new UserBehavior({
         userId,
         action,
@@ -33,29 +25,23 @@ const trackBehaviorUser = async (req, res) => {
       await behavior.save();
       behaviors.push(behavior);
     } else {
-      // Với các hành vi khác có productId
-      const behaviorDocs = productIds.map(pid => ({
-        userId,
-        productId: pid,
-        action,
-        keyword: action === "search" ? keyword : "",
-        timestamp: new Date(),
-      }));
+      // Hành vi view, addtocart, transaction
+      const behaviorDocs = [];
+
+      selectedItems.forEach(item => {
+        const quantity = item.quantity || 1;
+        for (let i = 0; i < quantity; i++) {
+          behaviorDocs.push({
+            userId,
+            productId: item.productId,
+            action,
+            timestamp: new Date(),
+          });
+        }
+      });
+
       behaviors = await UserBehavior.insertMany(behaviorDocs);
     }
-
-    // Nếu muốn gửi lên Kafka
-    /*
-    for (const b of behaviors) {
-      await produceEvent("user-behavior", {
-        userId: b.userId,
-        productId: b.productId,
-        action: b.action,
-        keyword: b.keyword,
-        timestamp: b.timestamp,
-      });
-    }
-    */
 
     res.status(201).json({
       message: "Behaviors user tracked successfully",
@@ -67,6 +53,7 @@ const trackBehaviorUser = async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 };
+
 
 const getBehaviorLogsByUser = async (req, res) => {
   try {
