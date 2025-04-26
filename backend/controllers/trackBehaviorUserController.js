@@ -6,52 +6,46 @@ const Product = require("../models/productModel");
 
 const trackBehaviorUser = async (req, res) => {
   try {
-    const { userId, productId, action, keyword = "" } = req.body;
+    const { userId, action, selectedItems = [], keyword = "" } = req.body;
 
     if (!userId || !action) {
       return res.status(400).json({ message: "userId và action là bắt buộc" });
     }
 
-    // Chuyển productId thành mảng nếu là 1 sản phẩm
-    let productIds = [];
-    if (Array.isArray(productId)) {
-      productIds = productId;
-    } else if (productId) {
-      productIds = [productId];
-    }
+    const kafkaTopic = process.env.KAFKA_TOPIC;
+    const logsToSend = [];
 
-    const timestamp = new Date();
-    let events = [];
-
-    // Trường hợp search (không có productId)
-    if (action === "search" && productIds.length === 0) {
+    if (action === "search" && selectedItems.length === 0) {
       const event = {
         userId,
         action,
         keyword,
-        timestamp,
+        timestamp: new Date(),
       };
-      events.push(event);
-      await produceEvent(process.env.KAFKA_TOPIC, event);
-
+      logsToSend.push(event);
     } else {
-      // Trường hợp có productId (view, addtocart, transaction)
-      for (const pid of productIds) {
-        const event = {
-          userId,
-          productId: pid,
-          action,
-          keyword: action === "search" ? keyword : "",
-          timestamp,
-        };
-        events.push(event);
-        await produceEvent(process.env.KAFKA_TOPIC, event);
-      }
+      selectedItems.forEach(item => {
+        const quantity = item.quantity || 1;
+        const now = new Date(); // tạo 1 lần
+        for (let i = 0; i < quantity; i++) {
+          logsToSend.push({
+            userId,
+            productId: item.productId,
+            action,
+            timestamp: now,
+          });
+        }
+      });
     }
 
+    // Gửi Kafka bất đồng bộ (song song)
+    await Promise.all(
+      logsToSend.map(event => produceEvent(kafkaTopic, event))
+    );
+
     res.status(201).json({
-      message: "Behaviors sent to Kafka successfully",
-      behaviors: events,
+      message: "Behaviors user tracked successfully",
+      totalSent: logsToSend,
     });
 
   } catch (err) {
@@ -59,6 +53,7 @@ const trackBehaviorUser = async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 };
+
 
 const getBehaviorLogsByUser = async (req, res) => {
   try {
