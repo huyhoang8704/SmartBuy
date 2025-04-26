@@ -4,6 +4,7 @@ const cors = require("cors");
 const bodyParser = require("body-parser");
 const cookieParser = require('cookie-parser');
 const startConsumerMongo = require("./kafka/consumer-mongo");
+const startConsumerAnalyst = require("./kafka/consumer-analyst");
 require("dotenv").config();
 const port = 4000;
 
@@ -22,7 +23,8 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cookieParser()); 
 
 // start consumer kafka
-startConsumerMongo(); 
+startConsumerMongo();
+// startConsumerAnalyst(); 
 
 userRoute(app);
 
