@@ -69,14 +69,12 @@
 
             <!-- Product Info -->
             <div class="space-y-1 min-h-[90px] flex flex-col justify-between">
-              <NuxtLink
-                :to="`/product/${product.slug}`"
-                class="hover:underline">
+              <button @click="viewProduct(product)" class="hover:underline">
                 <h3
                   class="text-sm font-semibold text-gray-800 truncate min-h-[1.25rem]">
                   {{ product.name || "Unnamed Product" }}
                 </h3>
-              </NuxtLink>
+              </button>
 
               <p class="text-gray-600 text-xs mt-0.5 truncate min-h-[1.75rem]">
                 {{ product.description || "No description available." }}
@@ -130,6 +128,7 @@
 <script setup>
 import { ref, computed, watch, onMounted } from "vue";
 import { useProducts } from "~/composables/api/useProducts";
+import { useTrackBehavior } from "~/composables/api/useTrackBehavior";
 
 // State variables
 const productsData = ref([]);
@@ -266,6 +265,15 @@ const handleImageError = (e) => {
 
 function handleAddToCart(product) {
   cart.addToCart(product);
+}
+
+async function viewProduct(product) {
+  console.log("Clicked!", product);
+  const success = await useTrackBehavior("view", { productId: product._id });
+  console.log(success);
+  if (success) {
+    navigateTo(`/product/${product.slug}`);
+  }
 }
 </script>
 

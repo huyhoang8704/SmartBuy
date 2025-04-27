@@ -15,10 +15,10 @@ database.connect();
 const userRoute = require('./routes/indexRoute');
 const syncLogsToMongo = require("./jobs/syncLogsToMongo");
 
-cron.schedule('*/2 * * * *', () => {
-  console.log('[Cron] Bắt đầu đồng bộ userBehavior logs');
-  syncLogsToMongo();
-});
+// cron.schedule('*/2 * * * *', () => {
+//   console.log('[Cron] Bắt đầu đồng bộ userBehavior logs');
+//   syncLogsToMongo();
+// });
 
 app.use(cors({
     origin: "http://localhost:3000",

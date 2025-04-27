@@ -1,100 +1,58 @@
 const produceEvent = require("../kafka/producer");
 const UserBehavior = require("../models/userBehaviorModel");
 const Product = require("../models/productModel");
-const syncLogsToMongo = require("../jobs/syncLogsToMongo");
-const redisClient = require("../database/redisClient");
 
 
-// const trackBehaviorUser = async (req, res) => {
-//     try {
-//       const { userId, productId, action, keyword } = req.body;
-  
-//       if (!userId && !action) {
-//         return res.status(400).json({ message: "userId và action là bắt buộc" });
-//       }
-//       const product = await Product.findById(productId);
-//       const behavior = new UserBehavior({ 
-//         userId, 
-//         productId, 
-//         action, 
-//         keyword,
-//         category: product.category,
-//         brand_name: product.brand_name
-
-//       });
-//       await behavior.save();
-  
-//       // await produceEvent("user-behavior", {
-//       //   userId,
-//       //   productId,
-//       //   action,
-//       //   keyword,
-//       //   timestamp: new Date(),
-//       // });
-  
-//       res.status(201).json({ message: "Behavior tracked successfully",
-//         behavior
-//        });
-//     } catch (err) {
-//       console.error(err);
-//       res.status(500).json({ message: "Server error" });
-//     }
-// };
 
 const trackBehaviorUser = async (req, res) => {
   try {
-    const { userId, productId, action, keyword } = req.body;
+    const { userId, action, selectedItems = [], keyword = "" } = req.body;
 
-    // Kiểm tra các tham số bắt buộc
     if (!userId || !action) {
       return res.status(400).json({ message: "userId và action là bắt buộc" });
     }
 
-    // Tìm product
-    const product = await Product.findById(productId);
-    if (!product) {
-      return res.status(404).json({ message: "Product not found" });
+    let behaviors = [];
+
+    if (action === "search" && selectedItems.length === 0) {
+      // Hành vi search
+      const behavior = new UserBehavior({
+        userId,
+        action,
+        keyword,
+        timestamp: new Date(),
+      });
+      await behavior.save();
+      behaviors.push(behavior);
+    } else {
+      // Hành vi view, addtocart, transaction
+      const behaviorDocs = [];
+
+      selectedItems.forEach(item => {
+        const quantity = item.quantity || 1;
+        for (let i = 0; i < quantity; i++) {
+          behaviorDocs.push({
+            userId,
+            productId: item.productId,
+            action,
+            timestamp: new Date(),
+          });
+        }
+      });
+
+      behaviors = await UserBehavior.insertMany(behaviorDocs);
     }
-
-    // Tạo object log behavior
-    const behavior = {
-      userId,
-      productId,
-      action,
-      keyword,
-      category: product.category,
-      brand_name: product.brand_name,
-      timestamp: new Date(),
-    };
-
-    // Tạo key Redis theo phút (để debug dễ hơn)
-    const now = new Date();
-    const keySuffix = `${now.getFullYear()}-${now.getMonth() + 1}-${now.getDate()}-${now.getHours()}-${now.getMinutes()}`;
-    const redisKey = `userBehavior:${userId}:${keySuffix}`;
-
-    // Lưu vào danh sách log
-    await redisClient.rPush(redisKey, JSON.stringify(behavior));
-
-    // Gán TTL nếu key mới
-    const ttl = parseInt(process.env.TTL || "120"); // default TTL = 2 phút
-    const ttlExists = await redisClient.ttl(redisKey);
-    if (ttlExists === -1) {
-      await redisClient.expire(redisKey, ttl);
-    }
-
-    // Đồng bộ log với MongoDB
-    // await syncLogsToMongo();
 
     res.status(201).json({
-      message: "Behavior tracked successfully",
-      behavior,
+      message: "Behaviors user tracked successfully",
+      behaviors,
     });
+
   } catch (err) {
-    console.error(err);
+    console.error("Error tracking behavior:", err);
     res.status(500).json({ message: "Server error" });
   }
 };
-
 
 
 const getBehaviorLogsByUser = async (req, res) => {
