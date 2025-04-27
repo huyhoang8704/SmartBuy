@@ -71,7 +71,7 @@
             <div class="space-y-1 min-h-[90px] flex flex-col justify-between">
               <button @click="viewProduct(product)" class="hover:underline">
                 <h3
-                  class="text-sm font-semibold text-gray-800 truncate min-h-[1.25rem]">
+                  class="text-sm font-semibold text-gray-800 truncate min-h-[1.25rem] text-start">
                   {{ product.name || "Unnamed Product" }}
                 </h3>
               </button>
@@ -90,13 +90,13 @@
                 <span class="text-red-500 font-semibold text-xs">
                   {{ product.price ? formatPrice(product.price) : "N/A" }}
                 </span>
-                <n-button
+                <!-- <n-button
                   size="small"
                   type="primary"
                   round
                   @click="handleAddToCart(product, $event)">
                   Add
-                </n-button>
+                </n-button> -->
               </div>
             </div>
           </n-card>
@@ -267,13 +267,16 @@ function handleAddToCart(product) {
   cart.addToCart(product);
 }
 
-async function viewProduct(product) {
+function viewProduct(product) {
   console.log("Clicked!", product);
-  const success = await useTrackBehavior("view", { productId: product._id });
-  console.log(success);
-  if (success) {
-    navigateTo(`/product/${product.slug}`);
-  }
+
+  // 1️⃣ fire-and-forget analytics
+  useTrackBehavior("view", { productId: product._id })
+    .then((success) => console.log("Tracked:", success))
+    .catch((err) => console.warn("Tracking failed:", err));
+
+  // 2️⃣ immediately navigate
+  navigateTo(`/product/${product.slug}`);
 }
 </script>
 
