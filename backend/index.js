@@ -26,7 +26,7 @@ app.use(cookieParser());
 // start consumer kafka
 startConsumerMongo();
 // startConsumerAnalyst(); 
-startAlgoliaConsumer();
+// startAlgoliaConsumer();
 
 userRoute(app);
 
