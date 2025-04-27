@@ -5,6 +5,7 @@ const bodyParser = require("body-parser");
 const cookieParser = require('cookie-parser');
 const startConsumerMongo = require("./kafka/consumer-mongo");
 const startConsumerAnalyst = require("./kafka/consumer-analyst");
+const startAlgoliaConsumer = require("./kafka/algoliaBehaviorConsumer");
 require("dotenv").config();
 const port = 4000;
 
@@ -25,6 +26,7 @@ app.use(cookieParser());
 // start consumer kafka
 startConsumerMongo();
 // startConsumerAnalyst(); 
+startAlgoliaConsumer();
 
 userRoute(app);
 
