@@ -26,9 +26,7 @@
           </button>
         </div>
 
-        <div
-          v-if="cart.items.length === 0"
-          class="text-gray-500 text-center mt-10">
+        <div v-if="!cart.items.length" class="text-gray-500 text-center mt-10">
           Giỏ hàng trống.
         </div>
 
@@ -45,24 +43,18 @@
 
             <div class="flex-1">
               <div class="font-medium">{{ item.name }}</div>
-              <div class="text-sm text-gray-500 mb-1">
-                Số lượng:
-                <button
-                  @click="changeQuantity(item.id, item.quantity - 1)"
-                  :disabled="isLoading"
-                  class="px-2 py-1 rounded border border-gray-300 hover:bg-gray-100 transition disabled:opacity-50 disabled:cursor-not-allowed">
-                  -
-                </button>
-
-                {{ item.quantity }}
-                <button
-                  @click="changeQuantity(item.id, item.quantity + 1)"
-                  :disabled="isLoading"
-                  class="px-2 py-1 rounded border border-gray-300 hover:bg-gray-100 transition disabled:opacity-50 disabled:cursor-not-allowed">
-                  +
-                </button>
+              <div class="text-sm text-gray-600">
+                Số lượng: {{ item.quantity }}
               </div>
-              <div class="text-red-600 font-semibold">
+
+              <button
+                @click="removeItem(item.id)"
+                :disabled="isLoading"
+                class="mt-2 px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700 transition disabled:opacity-50 disabled:cursor-not-allowed">
+                Xóa sản phẩm
+              </button>
+
+              <div class="text-red-600 font-semibold mt-1">
                 Giá: {{ (item.price * item.quantity).toLocaleString() }} đ
               </div>
             </div>
@@ -72,13 +64,11 @@
         <div
           class="pt-4 border-t mt-4 font-bold flex items-center justify-between">
           Tổng cộng: {{ cart.totalPrice.toLocaleString() }} đ
-          <div>
-            <NuxtLink to="/checkout"
-              ><n-button size="medium" type="primary" round @click="closeCart"
-                >Đặt hàng</n-button
-              ></NuxtLink
-            >
-          </div>
+          <NuxtLink to="/checkout">
+            <n-button size="medium" type="primary" round @click="closeCart">
+              Đặt hàng
+            </n-button>
+          </NuxtLink>
         </div>
       </div>
     </transition>
@@ -86,46 +76,48 @@
 </template>
 
 <script setup>
-import { useCartStore } from "@/stores/cart";
+import { ref, onMounted, watch } from "vue";
 import { onClickOutside, useEventListener } from "@vueuse/core";
+import { useCartStore } from "@/stores/cart";
 
 const cart = useCartStore();
 const props = defineProps({ isOpen: Boolean });
 const emit = defineEmits(["close"]);
 const panelRef = ref(null);
-const closeCart = () => emit("close");
 const isLoading = ref(false);
 
+const closeCart = () => emit("close");
+
+// fetch current cart on mount
 onMounted(() => {
   cart.fetchCart();
 });
 
+// close when clicking outside or pressing Escape
 onClickOutside(panelRef, closeCart);
 useEventListener("keydown", (e) => {
   if (e.key === "Escape") closeCart();
 });
-const changeQuantity = async (productId, newQty) => {
+
+// remove a single item
+const removeItem = async (productId) => {
+  if (isLoading.value) return;
   isLoading.value = true;
   try {
-    if (newQty <= 0) {
-      await cart.removeFromCart(productId);
-    } else {
-      await cart.updateCartItem(productId, newQty);
-      await cart.fetchCart();
-    }
+    await cart.removeFromCart(productId);
+  } catch (err) {
+    console.error("Failed to remove item:", err);
   } finally {
     isLoading.value = false;
   }
 };
 
+// change cursor when loading
 watch(isLoading, (val) => {
-  if (val) {
-    document.body.style.cursor = "wait";
-  } else {
-    document.body.style.cursor = "";
-  }
+  document.body.style.cursor = val ? "wait" : "";
 });
 </script>
+
 <style scoped>
 .slide-enter-from {
   transform: translateX(100%);

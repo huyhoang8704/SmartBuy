@@ -21,25 +21,25 @@ export const useCartStore = defineStore("cart", {
 
   actions: {
     // Action to add an item to the cart
-    async addToCart(product) {
+    async addToCart(product, quantity = 1) {
       const existing = this.items.find((item) => item.id === product._id);
 
-      // If the item already exists, we increase the quantity
       if (existing) {
-        existing.quantity++;
-        await this.updateCartItem(existing.id, existing.quantity); // Update the cart on the server
+        // +quantity instead of always +1
+        existing.quantity += quantity;
+        await this.updateCartItem(existing.id, existing.quantity);
       } else {
-        // If the item doesn't exist, we add it to the cart
         this.items.push({
           id: product._id,
           name: product.name,
           price: product.price,
-          quantity: 1,
+          quantity, // use the passed-in quantity
           image: product.thumbnail_url,
         });
-        await this.createCartItem(product, 1); // Add the item to the cart on the server
+        await this.createCartItem(product, quantity); // send quantity
       }
-      // After updating the cart, fetch the latest cart data
+
+      // now we refetch the canonical cart
       await this.fetchCart();
     },
 

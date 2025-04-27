@@ -10,7 +10,7 @@
       class="product-carousel">
       <n-carousel-item v-for="item in items" :key="item._id">
         <n-card
-          class="product-card"
+          class="product-card hover:cursor-pointer"
           @click="navigateTo(`/product/${item.slug}`)">
           <div class="product-image-container">
             <img
@@ -40,13 +40,13 @@
               <span class="product-price">
                 {{ item.price ? formatPrice(item.price) : "N/A" }}
               </span>
-              <n-button
+              <!-- <n-button
                 size="small"
-                type="success "
+                type="success"
                 round
                 @click.stop="handleAddToCart(item, $event)">
                 Add
-              </n-button>
+              </n-button> -->
             </div>
           </div>
         </n-card>

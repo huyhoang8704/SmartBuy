@@ -65,7 +65,11 @@
             button-placement="both" />
         </div>
 
-        <n-button type="primary" size="large" round>
+        <n-button
+          type="primary"
+          size="large"
+          round
+          @click="handleAddToCart(product)">
           Thêm vào giỏ hàng
         </n-button>
       </div>
@@ -83,6 +87,7 @@ import RelatedProducts from "~/components/RelatedProducts.vue";
 
 const route = useRoute();
 const { data } = await useSingleProduct({ slug: route.params.slug });
+const cart = useCartStore();
 
 const product = data.value.product;
 const relatedProducts = data.value.relatedProducts;
@@ -94,4 +99,8 @@ const formatPrice = (price) => {
     currency: "VND",
   }).format(price);
 };
+
+function handleAddToCart(product) {
+  cart.addToCart(product, quantity.value);
+}
 </script>

@@ -109,14 +109,21 @@
 import CartButton from "~/components/CartButton.vue";
 
 import { computed } from "vue";
+import { useTrackBehavior } from "~/composables/api/useTrackBehavior";
 
 const searchQuery = ref("");
 
-const navigateToSearch = () => {
+const navigateToSearch = async () => {
   if (searchQuery.value.trim() === "") {
     navigateTo("/");
+    return;
   } else {
-    navigateTo(`/search/${searchQuery.value.trim()}`);
+    const success = await useTrackBehavior("search", {
+      searchQuery: searchQuery.value,
+    });
+    if (success) {
+      navigateTo(`/search/${searchQuery.value.trim()}`);
+    }
   }
 };
 
