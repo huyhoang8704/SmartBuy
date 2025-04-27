@@ -11,7 +11,7 @@
       <n-carousel-item v-for="item in items" :key="item._id">
         <n-card
           class="product-card hover:cursor-pointer"
-          @click="navigateTo(`/product/${item.slug}`)">
+          @click="viewProduct(item)">
           <div class="product-image-container">
             <img
               v-if="item.thumbnail_url"
@@ -59,6 +59,8 @@
 import { ref, computed } from "vue";
 import { NCarousel, NCarouselItem, NCard, NRate, NButton } from "naive-ui";
 
+import { useTrackBehavior } from "~/composables/api/useTrackBehavior";
+
 const props = defineProps({
   items: {
     type: Array,
@@ -92,6 +94,18 @@ const formatPrice = (price) =>
     style: "currency",
     currency: "VND",
   }).format(price);
+
+function viewProduct(product) {
+  console.log("Clicked!", product);
+
+  useTrackBehavior("view", {
+    selectedItems: [{ productId: product._id, quantity: 1 }],
+  })
+    .then((success) => console.log("Tracked:", success))
+    .catch((err) => console.warn("Tracking failed:", err));
+
+  navigateTo(`/product/${product.slug}`);
+}
 </script>
 
 <style scoped>
