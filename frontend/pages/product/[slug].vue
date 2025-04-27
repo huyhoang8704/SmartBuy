@@ -84,6 +84,7 @@
 import { ref } from "vue";
 import { useSingleProduct } from "~/composables/api/useSingleProduct";
 import RelatedProducts from "~/components/RelatedProducts.vue";
+import { useTrackBehavior } from "~/composables/api/useTrackBehavior";
 
 const route = useRoute();
 const { data } = await useSingleProduct({ slug: route.params.slug });
@@ -101,6 +102,12 @@ const formatPrice = (price) => {
 };
 
 function handleAddToCart(product) {
+  useTrackBehavior("addtocart", {
+    productId: product._id,
+    quantity: quantity.value,
+  })
+    .then((success) => console.log("Tracked:", success))
+    .catch((err) => console.warn("Tracking failed:", err));
   cart.addToCart(product, quantity.value);
 }
 </script>
