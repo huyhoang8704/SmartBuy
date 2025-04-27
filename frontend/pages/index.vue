@@ -270,12 +270,12 @@ function handleAddToCart(product) {
 function viewProduct(product) {
   console.log("Clicked!", product);
 
-  // 1️⃣ fire-and-forget analytics
-  useTrackBehavior("view", { productId: product._id })
+  useTrackBehavior("view", {
+    selectedItems: [{ productId: product._id, quantity: 1 }],
+  })
     .then((success) => console.log("Tracked:", success))
     .catch((err) => console.warn("Tracking failed:", err));
 
-  // 2️⃣ immediately navigate
   navigateTo(`/product/${product.slug}`);
 }
 </script>
