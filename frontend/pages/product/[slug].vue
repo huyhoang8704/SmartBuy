@@ -103,8 +103,7 @@ const formatPrice = (price) => {
 
 function handleAddToCart(product) {
   useTrackBehavior("addtocart", {
-    productId: product._id,
-    quantity: quantity.value,
+    selectedItems: [{ productId: product._id, quantity: quantity.value }],
   })
     .then((success) => console.log("Tracked:", success))
     .catch((err) => console.warn("Tracking failed:", err));
