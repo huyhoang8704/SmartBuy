@@ -90,6 +90,7 @@
 import { useCartStore } from "@/stores/cart";
 import { useNotification } from "naive-ui";
 import { ref, computed, watch } from "vue";
+import { useTrackBehavior } from "~/composables/api/useTrackBehavior";
 
 const cart = useCartStore();
 const isLoading = ref(false);
@@ -161,15 +162,18 @@ const isItemSelected = (id) => {
 // Checkout simulation
 const checkout = async () => {
   isLoading.value = true;
+  useTrackBehavior("transaction", { selectedItems: selectedItems.value }).catch(
+    (err) => console.warn("Tracking failed", err)
+  );
   const data = await $fetch("http://localhost:4000/order", {
     headers: {
       Authorization: `Bearer ${token}`,
     },
     method: "POST",
-    body: JSON.stringify({
+    body: {
       selectedItems: selectedItems.value,
       paymentMethod: "cash",
-    }),
+    },
     onResponse({ response }) {
       isLoading.value = false;
       if (response.status !== 201) {
@@ -190,6 +194,10 @@ const checkout = async () => {
     },
   });
 };
+
+onMounted(() => {
+  cart.fetchCart();
+});
 
 watch(isLoading, (val) => {
   document.body.style.cursor = val ? "wait" : "";
