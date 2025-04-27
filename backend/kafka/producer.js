@@ -1,25 +1,20 @@
-// const kafka = require("./kafkaClient");
+require("dotenv").config();
+const { Kafka } = require("kafkajs");
 
-// const producer = kafka.producer();
+const kafka = new Kafka({
+  clientId: process.env.KAFKA_CLIENT_ID,
+  brokers: [process.env.KAFKA_BROKER],
+});
 
-// const produceEvent = async (topic, message) => {
-//   await producer.connect();
-//   await producer.send({
-//     topic,
-//     messages: [{ value: JSON.stringify(message) }],
-//   });
-//   await producer.disconnect();
-// };
+const producer = kafka.producer();
 
-// module.exports = produceEvent;
+const produceEvent = async (topic, message) => {
+  await producer.connect();
+  await producer.send({
+    topic: topic || process.env.KAFKA_TOPIC,
+    messages: [{ value: JSON.stringify(message) }],
+  });
+  await producer.disconnect();
+};
 
-
-// // ? Example
-// // const produceEvent = require("./kafka/producer");
-
-// // await produceEvent("user-behavior", {
-// //   userId: "u123",
-// //   action: "click",
-// //   productId: "p456",
-// //   timestamp: Date.now(),
-// // });
+module.exports = produceEvent;

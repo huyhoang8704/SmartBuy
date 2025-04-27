@@ -12,40 +12,40 @@ const trackBehaviorUser = async (req, res) => {
       return res.status(400).json({ message: "userId và action là bắt buộc" });
     }
 
-    let behaviors = [];
+    const kafkaTopic = process.env.KAFKA_TOPIC;
+    const logsToSend = [];
 
     if (action === "search" && selectedItems.length === 0) {
-      // Hành vi search
-      const behavior = new UserBehavior({
+      const event = {
         userId,
         action,
         keyword,
         timestamp: new Date(),
-      });
-      await behavior.save();
-      behaviors.push(behavior);
+      };
+      logsToSend.push(event);
     } else {
-      // Hành vi view, addtocart, transaction
-      const behaviorDocs = [];
-
       selectedItems.forEach(item => {
         const quantity = item.quantity || 1;
+        const now = new Date(); // tạo 1 lần
         for (let i = 0; i < quantity; i++) {
-          behaviorDocs.push({
+          logsToSend.push({
             userId,
             productId: item.productId,
             action,
-            timestamp: new Date(),
+            timestamp: now,
           });
         }
       });
-
-      behaviors = await UserBehavior.insertMany(behaviorDocs);
     }
+
+    // Gửi Kafka bất đồng bộ (song song)
+    await Promise.all(
+      logsToSend.map(event => produceEvent(kafkaTopic, event))
+    );
 
     res.status(201).json({
       message: "Behaviors user tracked successfully",
-      behaviors,
+      totalSent: logsToSend,
     });
 
   } catch (err) {
