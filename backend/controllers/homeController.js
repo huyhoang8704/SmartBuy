@@ -44,27 +44,11 @@ const index = async (req, res) => {
         .limit(limit)
         .skip(skip)
 
-    categories = [
-        {
-            category: "Phụ kiện thời trang",
-            slugCategory: "phu-kien-thoi-trang"
-        },
-        {
-            category: "Phụ kiện tóc",
-            slugCategory: "phu-kien-toc"
-        },
-        {
-            category: "Phụ kiện mắt kính",
-            slugCategory: "phu-kien-mat-kinh"
-        },        
-    ]
-
 
     res.status(200).json({
         products,
         totalItems,
         totalPages,
-        categories
     });
 }
 

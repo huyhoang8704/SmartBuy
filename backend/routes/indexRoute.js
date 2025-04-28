@@ -5,6 +5,7 @@ const productRoute = require('./productRoute')
 const cartRoute = require('./cartRoute')
 const orderRoute = require('./orderRoute')
 const userBehaviorRoute = require('./trackBehaviorUserRoute')
+const categoryRoute = require('./categoryRoute')
 
 const authenticateToken = require('../middlewares/authenticationUser')
 
@@ -12,6 +13,8 @@ module.exports = (app) => {
     app.use('/', homeRoute)
 
     app.use('/auth', authRoute)
+
+    app.use('/category', categoryRoute)
 
     app.use('/user',authenticateToken, userRoute)
 
