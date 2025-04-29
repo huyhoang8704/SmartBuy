@@ -2,16 +2,9 @@
   <div class="w-full min-h-screen flex flex-col md:flex-row gap-6">
     <!-- Sidebar (Sticky, height fit to content) -->
     <aside class="w-full md:w-64 flex-shrink-0 sticky top-30 z-5 self-start">
-      <n-card class="rounded-2xl shadow-md">
-        <template #header>
-          <div class="text-lg font-bold px-2">Categories</div>
-        </template>
-        <n-menu
-          :options="menuItems"
-          :value="selectedCategory === 'all' ? null : selectedCategory"
-          class="bubbly-menu"
-          @update:value="onCategorySelect" />
-      </n-card>
+      <CategoryMenu
+        :selectedCategory="selectedCategory"
+        @update:selectedCategory="(value) => (selectedCategory = value)" />
     </aside>
 
     <!-- Main Content -->
@@ -19,15 +12,6 @@
       <!-- Filter & Sort Bar -->
       <div
         class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-        <div class="flex items-center gap-3 flex-wrap md:hidden">
-          <n-select
-            v-model:value="selectedCategory"
-            :options="categoryOptions"
-            placeholder="Category"
-            class="w-full md:w-48"
-            round />
-        </div>
-
         <div class="flex items-center gap-3 ml-auto">
           <span class="text-sm text-gray-600">Sort by:</span>
           <n-select
@@ -133,8 +117,8 @@
 <script setup>
 import { ref, computed, watch, onMounted } from "vue";
 import { useProducts } from "~/composables/api/useProducts";
+import CategoryMenu from "~/components/CategoryMenu.vue";
 const route = useRoute();
-console.log(route.params);
 
 // State variables
 const productsData = ref([]);
@@ -171,6 +155,7 @@ const fetchProducts = async () => {
     limit: pageSize.value,
     sortKey: sortParams.value.sortKey,
     sortValue: sortParams.value.sortValue,
+    category: selectedCategory.value === "all" ? null : selectedCategory.value,
     search: route.params.slug,
   });
   productsData.value = data.value.products;
@@ -180,77 +165,28 @@ const fetchProducts = async () => {
 
 // Watch for changes that require data refetching
 watch(
-  [currentPage, pageSize, selectedSort, searchQuery],
+  [currentPage, pageSize, selectedSort, selectedCategory],
   (
-    [newPage, newLimit, newSort, newSearch],
-    [oldPage, oldLimit, oldSort, oldSearch]
+    [newPage, newLimit, newSort, newCategory],
+    [oldPage, oldLimit, oldSort, oldCategory]
   ) => {
-    // Only trigger if search is empty or long enough
     if (
-      typeof newSearch === "string" &&
-      (newSearch.length > 2 || newSearch === "")
+      newLimit !== oldLimit ||
+      newCategory !== oldCategory ||
+      newSort !== oldSort
     ) {
-      if (
-        newLimit !== oldLimit ||
-        newSearch !== oldSearch ||
-        newSort !== oldSort
-      ) {
-        currentPage.value = 1; // Reset page if any of those change
-      }
-      fetchProducts();
+      currentPage.value = 1; // Reset page if any of those change
     }
+    fetchProducts();
   },
   { immediate: true }
 );
+
 // Initial data load
 onMounted(() => {
+  selectedCategory.value = "";
   fetchProducts();
 });
-
-// Get unique categories from the data
-const uniqueCategories = computed(() => {
-  if (!productsData.value.length) return [];
-
-  // Extract unique categories from products
-  return [...new Set(productsData.value.map((product) => product.category))];
-});
-
-// For the category dropdown selector
-const categoryOptions = computed(() => {
-  return [
-    { label: "All Categories", value: "all" },
-    ...uniqueCategories.value.map((category) => ({
-      label: category,
-      value: category,
-    })),
-  ];
-});
-
-// For the sidebar menu - formatted for Naive UI menu
-const menuItems = computed(() => {
-  return [
-    {
-      label: "All Categories",
-      key: "all",
-      onClick: () => (selectedCategory.value = "all"),
-    },
-    ...uniqueCategories.value.map((category) => ({
-      label: category,
-      key: category,
-      onClick: () => (selectedCategory.value = category),
-    })),
-  ];
-});
-
-// Handle category selection from sidebar menu
-const onCategorySelect = (key) => {
-  selectedCategory.value = key || "all";
-};
-
-// Update page when page size changes
-const onPageSizeChange = (size) => {
-  pageSize.value = size;
-};
 
 // Format price to Vietnamese currency
 const formatPrice = (price) => {
@@ -268,7 +204,6 @@ const handleImageError = (e) => {
 };
 
 // Add product to cart
-
 function handleAddToCart(product) {
   cart.addToCart(product);
 }
@@ -279,20 +214,5 @@ function handleAddToCart(product) {
 :deep(.n-card:hover) {
   transform: scale(1.01);
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
-}
-
-/* Add some styling for the menu */
-:deep(.bubbly-menu .n-menu-item) {
-  margin: 4px 0;
-  border-radius: 8px;
-  transition: all 0.2s ease;
-}
-
-:deep(.bubbly-menu .n-menu-item:hover) {
-  background-color: rgba(0, 0, 0, 0.05);
-}
-
-:deep(.bubbly-menu .n-menu-item-content--selected) {
-  border-radius: 8px;
 }
 </style>
