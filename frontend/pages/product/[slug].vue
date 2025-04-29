@@ -91,7 +91,9 @@ const { data } = await useSingleProduct({ slug: route.params.slug });
 const cart = useCartStore();
 
 const product = data.value.product;
+console.log(data.value);
 const relatedProducts = data.value.relatedProducts;
+
 const quantity = ref(1);
 
 const formatPrice = (price) => {

@@ -4,12 +4,14 @@ export const useProducts = async ({
   sortValue = "desc",
   limit = 8,
   search = "",
+  category = "",
 }: {
   page?: number;
   sortKey?: string;
   sortValue?: string;
   limit?: number;
   search?: string | number;
+  category?: string;
 }) => {
   console.log("Calling useProducts with:", {
     page,
@@ -17,6 +19,7 @@ export const useProducts = async ({
     sortValue,
     limit,
     search,
+    category,
   });
   const { data, error } = await useFetch("http://localhost:4000/", {
     query: {
@@ -25,6 +28,7 @@ export const useProducts = async ({
       sortValue,
       limit,
       search,
+      category,
     },
 
     onResponse({ response }) {

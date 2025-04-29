@@ -18,7 +18,8 @@
                 v-model:value="searchQuery"
                 placeholder="Search..."
                 round
-                size="medium" />
+                size="medium"
+                @keyup.enter="navigateToSearch" />
               <n-button type="primary" round @click="navigateToSearch">
                 <Icon
                   name="material-symbols:search-rounded"
@@ -118,12 +119,13 @@ const navigateToSearch = async () => {
     navigateTo("/");
     return;
   } else {
-    const success = await useTrackBehavior("search", {
-      searchQuery: searchQuery.value,
-    });
-    if (success) {
-      navigateTo(`/search/${searchQuery.value.trim()}`);
-    }
+    useTrackBehavior("search", {
+      keyword: searchQuery.value,
+    })
+      .then((success) => console.log("Tracked:", success))
+      .catch((err) => console.warn("Tracking failed:", err));
+
+    navigateTo(`/search/${searchQuery.value.trim()}`);
   }
 };
 
