@@ -49,13 +49,10 @@ const createManyProducts = async (req, res) => {
             }
 
             const newProduct = new Product({
-                STT: product.STT,
                 name: product.name,
-                description: product.description,
                 category: product.category,
                 price: product.price,
                 thumbnail_url: product.thumbnail_url,
-                stock: product.stock,
                 brand_name: product.brand_name
             });
 
