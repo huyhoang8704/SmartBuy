@@ -3,38 +3,39 @@ const searchHelper = require("../utils/searchHelper");
 
 const index = async (req, res) => {
     let find = {
-        deleted : false,
-    }
-    // Categories
+        deleted: false,
+    };
+
+    // Filter by category
     if (req.query.category) {
         find.slugCategory = req.query.category;
     }
+
     // Search dishes
-    if(req.query.search){
+    if (req.query.search) {
         find.name = searchHelper(req);
     }
-    // Sort Dishes
+
+    // Default sort: newest first
     let sort = {
-        STT : "desc"
+        createdAt: -1 // Descending: newest first
     };
 
-    if(req.query.sortKey && req.query.sortValue){
-        delete sort.STT;
-        sort[req.query.sortKey] = req.query.sortValue
+    // Custom sort
+    if (req.query.sortKey && req.query.sortValue) {
+        sort = {}; // override default
+        sort[req.query.sortKey] = req.query.sortValue === "asc" ? 1 : -1;
     }
+
     // Pagination
-    let limit = 0; // Number of items in a page
-    if(req.query.limit) {
-        limit = parseInt(req.query.limit)
-    } else {
-        limit = 15
-    }
-    let skip = 0;  // Default skip is 0
-    
+    let limit = parseInt(req.query.limit) || 15;
+    let skip = 0;
+
     if (req.query.page) {
-        let page = parseInt(req.query.page); // Current Page
+        let page = parseInt(req.query.page);
         skip = (page - 1) * limit;
     }
+
     const totalItems = await Product.countDocuments(find);
     const totalPages = Math.ceil(totalItems / limit);
 
@@ -42,15 +43,14 @@ const index = async (req, res) => {
         .find(find)
         .sort(sort)
         .limit(limit)
-        .skip(skip)
-
+        .skip(skip);
 
     res.status(200).json({
         products,
         totalItems,
         totalPages,
     });
-}
+};
 
 
 
