@@ -13,7 +13,12 @@ const index = async (req, res) => {
 
     // Search dishes
     if (req.query.search) {
-        find.name = searchHelper(req);
+        const regex = searchHelper(req.query.search);
+        find.$or = [
+            { name: regex },
+            { description: regex },
+            { category: regex },
+        ];
     }
 
     // Default sort: newest first

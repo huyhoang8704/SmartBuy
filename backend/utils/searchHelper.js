@@ -1,7 +1,6 @@
-module.exports = (req) =>{
-    let regex = "";
-    if(req.query.search){
-        regex = new RegExp(req.query.search , "i")
-    }
-    return regex
-}
+module.exports = (search) => {
+    if (!search) return null;
+
+    const escaped = search.trim().replace(/[-[\]{}()*+?.,\\^$|#\s]/g, "\\$&");
+    return new RegExp(escaped, "i"); // tìm bất kỳ vị trí nào, thêm ^ nếu muốn từ đầu
+};
