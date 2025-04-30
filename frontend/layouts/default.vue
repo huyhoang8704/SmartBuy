@@ -54,7 +54,6 @@
     <!-- Main Content Area - Full width with minimal padding -->
     <div class="flex-1 w-full p-4">
       <div class="flex flex-col md:flex-row gap-6">
-        <!-- Sidebar - Bubbly design -->
         <!-- Main Content - Bubbly card -->
         <main class="flex-1">
           <n-card class="rounded-2xl shadow-md">

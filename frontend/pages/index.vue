@@ -14,11 +14,14 @@
         class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div class="flex items-center gap-3 ml-auto">
           <span class="text-sm text-gray-600">Sort by:</span>
-          <n-select
-            v-model:value="selectedSort"
-            :options="sortOptions"
-            class="w-48"
-            round />
+          <span>
+            <n-select
+              v-model:value="selectedSort"
+              :options="sortOptions"
+              class="min-w-[150px] w-auto"
+              round
+              :consistent-menu-width="false" />
+          </span>
         </div>
       </div>
 
@@ -120,7 +123,7 @@ const productsData = ref([]);
 const pageCount = ref(0);
 const searchQuery = ref("");
 const selectedCategory = ref("all");
-const selectedSort = ref("rating-desc");
+const selectedSort = ref("");
 const currentPage = ref(1);
 const pageSize = ref(16);
 const cart = useCartStore();
@@ -129,6 +132,7 @@ const productGridLoading = ref(false);
 
 // Sort options based on API parameters (sortKey: "price" or "rating", sortValue: "asc" or "desc")
 const sortOptions = [
+  { label: "Default", value: "" }, // Updated value to null for default
   { label: "Price: Low to High", value: "price-asc" },
   { label: "Price: High to Low", value: "price-desc" },
   { label: "Rating: Low to High", value: "rating-asc" },
@@ -137,20 +141,21 @@ const sortOptions = [
 
 // Split the selected sort option into sortKey and sortValue
 const sortParams = computed(() => {
+  if (selectedSort.value === "") {
+    return null; // Return null for default sorting
+  }
   const [key, value] = selectedSort.value.split("-");
   return { sortKey: key, sortValue: value };
 });
 
 // Fetch products from API
 const fetchProducts = async () => {
-  console.log("Calling fetchProducts");
-  console.log(selectedCategory.value);
   productGridLoading.value = true;
   const { data } = await useProducts({
     page: currentPage.value,
     limit: pageSize.value,
-    sortKey: sortParams.value.sortKey,
-    sortValue: sortParams.value.sortValue,
+    sortKey: sortParams.value?.sortKey ?? null,
+    sortValue: sortParams.value?.sortValue ?? null,
     category: selectedCategory === "all" ? null : selectedCategory.value,
     search: searchQuery.value,
   });
@@ -195,12 +200,6 @@ const handleImageError = (e) => {
     "data:image/svg+xml;charset=UTF-8,%3Csvg xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22 width%3D%22300%22 height%3D%22300%22 viewBox%3D%220 0 300 300%22%3E%3Crect fill%3D%22%23e0e0e0%22 width%3D%22300%22 height%3D%22300%22%2F%3E%3C%2Fsvg%3E";
   e.target.onerror = null;
 };
-
-// Add product to cart
-
-function handleAddToCart(product) {
-  cart.addToCart(product);
-}
 
 function viewProduct(product) {
   console.log("Clicked!", product);
