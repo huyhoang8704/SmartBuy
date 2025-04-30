@@ -1,14 +1,14 @@
 export const useProducts = async ({
   page = 1,
-  sortKey = "price",
-  sortValue = "desc",
+  sortKey = null, // Allow null for default
+  sortValue = null, // Allow null for default
   limit = 8,
   search = "",
   category = "",
 }: {
   page?: number;
-  sortKey?: string;
-  sortValue?: string;
+  sortKey?: string | null; // Updated type to allow null
+  sortValue?: string | null; // Updated type to allow null
   limit?: number;
   search?: string | number;
   category?: string;
@@ -24,8 +24,7 @@ export const useProducts = async ({
   const { data, error } = await useFetch("http://localhost:4000/", {
     query: {
       page,
-      sortKey,
-      sortValue,
+      ...(sortKey && sortValue ? { sortKey, sortValue } : {}), // Exclude sortKey and sortValue if not needed
       limit,
       search,
       category,
