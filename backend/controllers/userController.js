@@ -17,7 +17,7 @@ const getUser = async (req, res) => {
         const user = await User.findOne({
             _id: req.params.id,
             deleted : false
-        }).select("name email phone address role")
+        }).select("-password");
         if (!user) return res.status(404).json({ message: "User not found." });
         res.status(200).json(user);
     } catch (err) {
