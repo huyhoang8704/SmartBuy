@@ -1,11 +1,13 @@
 version: '3.8'
 
 services:
-  backend:
-    container_name: ecommerce-backend
+  backend1:
+    container_name: ecommerce-backend1
     build: .
     ports:
-      - "4000:4000"
+      - "4001:4000"
+    environment:
+      - MAPPED_PORT=4001
     volumes:
       - .:/app
       - /app/node_modules
@@ -18,6 +20,38 @@ services:
     networks:
       - ecommerce-network
 
+
+  backend2:
+    container_name: ecommerce-backend2
+    build: .
+    ports:
+      - "4002:4000"
+    environment:
+      - MAPPED_PORT=4002
+    volumes:
+      - .:/app
+      - /app/node_modules
+    env_file:
+      - .env
+    depends_on:
+      - mongo
+      - kafka
+      - zookeeper
+    networks:
+      - ecommerce-network
+
+  nginx:
+    image: nginx:latest
+    container_name: nginx-load-balancer
+    ports:
+      - "4000:80" # Expose Nginx on port 4000
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro # Mount Nginx config
+    depends_on:
+      - backend1
+      - backend2
+    networks:
+      - ecommerce-network
   mongo:
     image: mongo
     container_name: mongodb
@@ -39,6 +73,7 @@ services:
     image: confluentinc/cp-kafka:latest
     depends_on:
       - zookeeper
+    restart: always
     ports:
       - "9092:9092"  # để máy thật (Postman, debug tools) có thể kết nối nếu cần
     environment:

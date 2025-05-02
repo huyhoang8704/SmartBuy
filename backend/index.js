@@ -33,4 +33,5 @@ userRoute(app);
 
 app.listen(port , () =>{
     console.log(`App listening on port ${port}`);
+    console.log(`This instance is mapped to Docker port: ${process.env.MAPPED_PORT || "unknown"}`); // Log cổng ánh xạ
 })
