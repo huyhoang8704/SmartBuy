@@ -1,5 +1,5 @@
-// stores/cart.ts
 import { defineStore } from "pinia";
+import { useAuthStore } from "@/stores/auth"; // Adjust if path differs
 
 export const useCartStore = defineStore("cart", {
   state: () => ({
@@ -20,63 +20,57 @@ export const useCartStore = defineStore("cart", {
   },
 
   actions: {
-    // Action to add an item to the cart
-    async addToCart(product, quantity = 1) {
-      const existing = this.items.find((item) => item.id === product._id);
+    async addToCart(product, quantity = 1): Promise<boolean> {
+      try {
+        const existing = this.items.find((item) => item.id === product._id);
+        let success = false;
 
-      if (existing) {
-        // +quantity instead of always +1
-        existing.quantity += quantity;
-        await this.updateCartItem(existing.id, existing.quantity);
-      } else {
-        this.items.push({
-          id: product._id,
-          name: product.name,
-          price: product.price,
-          quantity, // use the passed-in quantity
-          image: product.thumbnail_url,
-        });
-        await this.createCartItem(product, quantity); // send quantity
+        if (existing) {
+          existing.quantity += quantity;
+          success = await this.updateCartItem(existing.id, existing.quantity);
+        } else {
+          this.items.push({
+            id: product._id,
+            name: product.name,
+            price: product.price,
+            quantity,
+            image: product.thumbnail_url,
+          });
+          success = await this.createCartItem(product, quantity);
+        }
+
+        await this.fetchCart();
+        return success;
+      } catch (error) {
+        console.error("Error in addToCart:", error);
+        return false;
       }
-
-      // now we refetch the canonical cart
-      await this.fetchCart();
     },
-
-    // Action to remove an item from the cart
-    async removeFromCart(productId: string) {
-      // Remove the item from the local store
+    async removeFromCart(productId: string): Promise<boolean> {
       this.items = this.items.filter((item) => item.id !== productId);
-
-      // Call API to remove the item from the cart on the server
-      await this.deleteCartItem(productId);
-
-      // Fetch the latest cart data
+      const success = await this.deleteCartItem(productId);
       await this.fetchCart();
+      return success;
     },
 
-    // Action to clear the entire cart
     async clearCart() {
       this.items = [];
-
-      // Call the API to clear the cart on the server
-      // await this.clearCartAPI();
-
-      // Fetch the latest cart data
-      // await this.fetchCart();
+      // Optionally: await this.clearCartAPI(); and then await this.fetchCart();
     },
 
-    // Fetch the cart data from the server and update the store
     async fetchCart() {
       const userId = localStorage.getItem("userId");
+      const token = localStorage.getItem("authToken");
 
-      if (userId) {
-        const response = await $fetch(`http://localhost:4000/cart/`, {
+      if (!userId || !token) {
+        useAuthStore().logOut();
+        return;
+      }
+
+      try {
+        const response = await $fetch("http://localhost:4000/cart/", {
           headers: {
-            Authorization: `Bearer ${localStorage.getItem("authToken")}`,
-          },
-          onResponse({ response }) {
-            console.log(response._data);
+            Authorization: `Bearer ${token}`,
           },
         });
 
@@ -91,48 +85,66 @@ export const useCartStore = defineStore("cart", {
         } else {
           this.items = [];
         }
+      } catch (error: any) {
+        if (
+          error?.response?.status === 401 ||
+          error?.response?.status === 403
+        ) {
+          useAuthStore().logOut();
+        }
+        this.items = [];
       }
     },
 
-    // Helper method to create a new cart item on the server
-    async createCartItem(product, quantity) {
+    async createCartItem(product, quantity): Promise<boolean> {
       const userId = localStorage.getItem("userId");
-      if (userId) {
-        await $fetch(`http://localhost:4000/cart/add-product`, {
+      if (!userId) return false;
+
+      try {
+        await $fetch("http://localhost:4000/cart/add-product", {
           method: "POST",
           headers: {
             Authorization: `Bearer ${localStorage.getItem("authToken")}`,
           },
           body: JSON.stringify({
-            userId: userId,
+            userId,
             productId: product._id,
-            quantity: quantity,
+            quantity,
           }),
         });
+        return true;
+      } catch (error) {
+        console.error("createCartItem error", error);
+        return false;
       }
     },
 
-    // Helper method to update a cart item on the server
-    async updateCartItem(productId: string, quantity: number) {
+    async updateCartItem(
+      productId: string,
+      quantity: number
+    ): Promise<boolean> {
       const userId = localStorage.getItem("userId");
-      if (userId) {
-        await $fetch(`http://localhost:4000/cart/`, {
+      if (!userId) return false;
+
+      try {
+        const response = await $fetch(`http://localhost:4000/cart/`, {
           method: "PUT",
           headers: {
             Authorization: `Bearer ${localStorage.getItem("authToken")}`,
           },
-          body: JSON.stringify({
-            productId,
-            quantity,
-          }),
+          body: JSON.stringify({ productId, quantity }),
         });
+        return true;
+      } catch (error) {
+        console.error("Update failed:", error);
+        return false;
       }
     },
-
-    // Helper method to delete a cart item on the server
-    async deleteCartItem(productId: string) {
+    async deleteCartItem(productId: string): Promise<boolean> {
       const userId = localStorage.getItem("userId");
-      if (userId) {
+      if (!userId) return false;
+
+      try {
         await $fetch(`http://localhost:4000/cart/${productId}`, {
           method: "DELETE",
           headers: {
@@ -142,17 +154,11 @@ export const useCartStore = defineStore("cart", {
             userId,
           }),
         });
+        return true;
+      } catch (error) {
+        console.error("deleteCartItem error", error);
+        return false;
       }
     },
-
-    // Helper method to clear the entire cart on the server
-    // async clearCartAPI() {
-    //   const userId = localStorage.getItem("userId");
-    //   if (userId) {
-    //     await $fetch(`http://localhost:4000/cart/${userId}/clear`, {
-    //       method: "DELETE",
-    //     });
-    //   }
-    // },
   },
 });
