@@ -9,6 +9,9 @@ import MenuButton from "./MenuButton.vue";
 
 function onNavigate(key) {
   switch (key) {
+    case "profile":
+      navigateTo("/profile");
+      break;
     case "history":
       navigateTo("/buying-history");
       break;

@@ -1,42 +1,22 @@
-export const useProducts = async ({
-  page = 1,
-  sortKey = null, // Allow null for default
-  sortValue = null, // Allow null for default
-  limit = 8,
-  search = "",
-  category = "",
-}: {
+// composables/useProducts.ts
+
+export const useProducts = async (params: {
   page?: number;
-  sortKey?: string | null; // Updated type to allow null
-  sortValue?: string | null; // Updated type to allow null
   limit?: number;
+  sortKey?: string | null;
+  sortValue?: string | null;
   search?: string | number;
-  category?: string;
+  category?: string | null;
 }) => {
-  console.log("Calling useProducts with:", {
-    page,
-    sortKey,
-    sortValue,
-    limit,
-    search,
-    category,
-  });
-  const { data, error } = await useFetch("http://localhost:4000/", {
+  return await $fetch("http://localhost:4000/", {
     query: {
-      page,
-      ...(sortKey && sortValue ? { sortKey, sortValue } : {}), // Exclude sortKey and sortValue if not needed
-      limit,
-      search,
-      category,
-    },
-
-    onResponse({ response }) {
-      console.log(response._data);
-    },
-    onRequestError({ request }) {
-      console.log("Request Error:", request.toString());
+      page: params.page,
+      limit: params.limit,
+      ...(params.sortKey && params.sortValue
+        ? { sortKey: params.sortKey, sortValue: params.sortValue }
+        : {}),
+      search: params.search,
+      category: params.category,
     },
   });
-
-  return { data };
 };
