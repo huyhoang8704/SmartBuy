@@ -55,6 +55,24 @@ services:
     networks:
       - ecommerce-network
 
+  spark:
+    image: bitnami/spark:latest
+    container_name: spark-processor
+    depends_on:
+      - kafka
+      - mongo
+    environment:
+      - SPARK_MODE=driver
+    volumes:
+      - ./kafka:/spark # Mount the local directory containing the Spark job
+    command:
+      - "/opt/bitnami/spark/bin/spark-submit"
+      - "--packages"
+      - "org.apache.spark:spark-sql-kafka-0-10_2.12:3.3.0,org.mongodb.spark:mongo-spark-connector_2.12:3.0.1"
+      - "/spark/spark_processor.py" # Path to your Spark job
+    networks:
+      - ecommerce-network
+
 
 volumes:
   mongo_data:
@@ -62,3 +80,5 @@ volumes:
 networks:
   ecommerce-network:
     driver: bridge
+
+
