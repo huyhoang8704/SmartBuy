@@ -1,5 +1,5 @@
 from pyspark.sql import SparkSession
-from pyspark.sql.functions import from_json, col, when, to_timestamp
+from pyspark.sql.functions import from_json, col, when, to_timestamp, current_timestamp
 from pyspark.sql.types import StructType, StringType
 
 # 1. Tạo Spark session có Kafka và MongoDB
@@ -50,7 +50,8 @@ df_grouped = df_scored \
     .withWatermark("event_time", "1 minute") \
     .groupBy("visitorid", "itemid") \
     .sum("score") \
-    .withColumnRenamed("sum(score)", "score")
+    .withColumnRenamed("sum(score)", "score") \
+    .withColumn("timestamp", current_timestamp()) 
 
 # 8. Ghi kết quả vào MongoDB
 def write_to_mongo(batch_df, batch_id):
