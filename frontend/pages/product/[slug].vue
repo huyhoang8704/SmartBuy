@@ -85,10 +85,12 @@ import { ref } from "vue";
 import { useSingleProduct } from "~/composables/api/useSingleProduct";
 import RelatedProducts from "~/components/RelatedProducts.vue";
 import { useTrackBehavior } from "~/composables/api/useTrackBehavior";
+import { useNotification } from "naive-ui";
 
 const route = useRoute();
 const { data } = await useSingleProduct({ slug: route.params.slug });
 const cart = useCartStore();
+const notification = useNotification();
 
 const product = data.value.product;
 console.log(data.value);
@@ -103,12 +105,17 @@ const formatPrice = (price) => {
   }).format(price);
 };
 
-function handleAddToCart(product) {
+async function handleAddToCart(product) {
   useTrackBehavior("addtocart", {
     selectedItems: [{ productId: product._id, quantity: quantity.value }],
   })
-    .then((success) => console.log("Tracked:", success))
-    .catch((err) => console.warn("Tracking failed:", err));
-  cart.addToCart(product, quantity.value);
+    .catch((err) => console.warn("Tracking failed:", err))
+    .then((success) => console.log("Tracked:", success));
+  const success = await cart.addToCart(product, quantity.value);
+  if (success) {
+    notification.success({
+      content: "Thêm vào giỏ hàng thành công",
+    });
+  }
 }
 </script>

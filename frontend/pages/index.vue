@@ -2,9 +2,16 @@
   <div class="w-full min-h-screen flex flex-col md:flex-row gap-6">
     <!-- Sidebar (Sticky, height fit to content) -->
     <aside class="w-full md:w-64 flex-shrink-0 sticky top-30 z-5 self-start">
-      <CategoryMenu
-        :selectedCategory="selectedCategory"
-        @update:selectedCategory="(value) => (selectedCategory = value)" />
+      <button
+        class="md:hidden bg-gray-200 p-2 rounded mb-2"
+        @click="isSidebarOpen = !isSidebarOpen">
+        {{ isSidebarOpen ? "Hide Categories" : "Show Categories" }}
+      </button>
+      <div v-show="isSidebarOpen" class="transition-all duration-300">
+        <CategoryMenu
+          :selectedCategory="selectedCategory"
+          @update:selectedCategory="(value) => (selectedCategory = value)" />
+      </div>
     </aside>
 
     <!-- Main Content -->
@@ -27,18 +34,34 @@
 
       <!-- Loading state -->
       <div
-        v-if="productsData.length === 0 || productGridLoading"
+        v-if="productsData.length === 0 && !productGridLoading"
         class="flex justify-center py-12">
         <n-spin size="large" />
+      </div>
+
+      <!-- Skeleton Loader -->
+      <div
+        v-if="productGridLoading"
+        class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 h-fit">
+        <template v-for="n in 8" :key="n">
+          <div class="rounded-lg shadow-sm p-2 animate-pulse">
+            <div class="w-full aspect-square bg-gray-200 rounded-md mb-2"></div>
+            <div class="space-y-2">
+              <div class="h-4 bg-gray-200 rounded"></div>
+              <div class="h-3 bg-gray-200 rounded w-3/4"></div>
+            </div>
+          </div>
+        </template>
       </div>
 
       <!-- Product Grid -->
       <div
         v-else
-        class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 h-fit">
+        class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 px-8 h-fit">
         <template v-for="product in productsData" :key="product._id">
           <n-card
-            class="rounded-lg shadow-sm transition hover:shadow-md hover:scale-[1.01] cursor-pointer p-2">
+            class="rounded-lg shadow-sm transition hover:shadow-md hover:scale-[1.01] cursor-pointer p-2"
+            @click="viewProduct(product)">
             <div
               class="w-full aspect-square bg-gray-100 rounded-md overflow-hidden mb-2">
               <img
@@ -56,12 +79,10 @@
 
             <!-- Product Info -->
             <div class="space-y-1 min-h-[90px] flex flex-col justify-between">
-              <button @click="viewProduct(product)" class="hover:underline">
-                <h3
-                  class="text-sm font-semibold text-gray-800 truncate min-h-[1.25rem] text-start">
-                  {{ product.name || "Unnamed Product" }}
-                </h3>
-              </button>
+              <h3
+                class="text-sm font-semibold text-gray-800 truncate min-h-[1.25rem] text-start">
+                {{ product.name || "Unnamed Product" }}
+              </h3>
 
               <p class="text-gray-600 text-xs mt-0.5 truncate min-h-[1.75rem]">
                 {{ product.description || "No description available." }}
@@ -77,13 +98,6 @@
                 <span class="text-red-500 font-semibold text-xs">
                   {{ product.price ? formatPrice(product.price) : "N/A" }}
                 </span>
-                <!-- <n-button
-                  size="small"
-                  type="primary"
-                  round
-                  @click="handleAddToCart(product, $event)">
-                  Add
-                </n-button> -->
               </div>
             </div>
           </n-card>
@@ -105,11 +119,18 @@
           :page-count="pageCount"
           :page-size="pageSize"
           size="large"
-          round
-          @update:page-size="onPageSizeChange" />
+          round />
       </div>
     </div>
   </div>
+
+  <!-- Add a scroll-to-top button -->
+  <button
+    v-if="showScrollToTop"
+    @click="scrollToTop"
+    class="fixed bottom-4 right-4 bg-green-600 text-white p-2 rounded-full shadow-lg transition-transform transform hover:scale-110 hover:bg-green-700">
+    Back to top
+  </button>
 </template>
 
 <script setup>
@@ -130,6 +151,9 @@ const cart = useCartStore();
 
 const productGridLoading = ref(false);
 
+// Sidebar state
+const isSidebarOpen = ref(true);
+
 // Sort options based on API parameters (sortKey: "price" or "rating", sortValue: "asc" or "desc")
 const sortOptions = [
   { label: "Default", value: "" }, // Updated value to null for default
@@ -148,19 +172,32 @@ const sortParams = computed(() => {
   return { sortKey: key, sortValue: value };
 });
 
+// Scroll-to-top functionality
+const showScrollToTop = ref(false);
+
+const scrollToTop = () => {
+  window.scrollTo({ top: 0, behavior: "smooth" });
+};
+
+window.addEventListener("scroll", () => {
+  showScrollToTop.value = window.scrollY > 300;
+});
+
 // Fetch products from API
 const fetchProducts = async () => {
   productGridLoading.value = true;
-  const { data } = await useProducts({
+
+  const data = await useProducts({
     page: currentPage.value,
     limit: pageSize.value,
     sortKey: sortParams.value?.sortKey ?? null,
     sortValue: sortParams.value?.sortValue ?? null,
-    category: selectedCategory === "all" ? null : selectedCategory.value,
+    category: selectedCategory.value === "all" ? null : selectedCategory.value,
     search: searchQuery.value,
   });
-  productsData.value = data.value.products;
-  pageCount.value = data.value.totalPages ?? 1;
+
+  productsData.value = data.products;
+  pageCount.value = data.totalPages ?? 1;
   productGridLoading.value = false;
 };
 
@@ -184,14 +221,20 @@ watch(
         currentPage.value = 1; // Reset page if any of those change
       }
       fetchProducts();
+      scrollToTop();
     }
   },
   { immediate: true }
 );
+
 // Initial data load
 onMounted(() => {
   selectedCategory.value = ""; // Default to "all" category
   fetchProducts();
+});
+// Add automatic scroll-to-top after page change
+watch(currentPage, () => {
+  scrollToTop();
 });
 
 // Handle image loading errors
@@ -223,9 +266,12 @@ function formatPrice(value) {
 </script>
 
 <style scoped>
-/* Optional: Add consistent scale/bubbly hover effects */
+/* Enhance product card hover effects */
 :deep(.n-card:hover) {
-  transform: scale(1.01);
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+  transform: scale(1.05);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+:deep(.button:hover) {
 }
 </style>

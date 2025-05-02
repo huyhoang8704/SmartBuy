@@ -1,7 +1,7 @@
 <template>
   <n-card class="rounded-2xl shadow-md">
     <template #header>
-      <div class="text-lg font-bold px-2">Categories</div>
+      <div class="text-lg font-bold px-2">Danh mục sản phẩm</div>
     </template>
     <n-menu
       :options="menuItems"
@@ -59,5 +59,6 @@ onMounted(async () => {
 
 :deep(.bubbly-menu .n-menu-item-content--selected) {
   border-radius: 8px;
+  font-weight: 600;
 }
 </style>

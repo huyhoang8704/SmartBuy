@@ -15,6 +15,10 @@ const emit = defineEmits(["navigate"]);
 
 const menuOptions = [
   {
+    label: "Profile",
+    key: "profile",
+  },
+  {
     label: "Purchase History",
     key: "history",
   },
