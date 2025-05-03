@@ -102,6 +102,25 @@ def create_interactions_and_item_features(df, split_ratio, product_path):
     
     return interactions, item_features, user_enc, item_enc
 
+def recommend(raw_user, k=5):
+    if raw_user not in user_enc.classes_:
+        return []
+    uidx = user_enc.transform([raw_user])[0]
+
+    n_items = item_features.shape[0]
+
+    user_ids = np.full(n_items, uidx, dtype=np.int32)
+    item_ids = np.arange(n_items, dtype=np.int32)
+
+    scores = model.predict(
+        user_ids,
+        item_ids,
+        item_features=item_features
+    )
+    top_idxs = np.argsort(-scores)[:k]
+    return item_enc.inverse_transform(top_idxs)
+print("Top-5 for visitor:", recommend("680162a48fdda4ef6a15a8b7", k=5))
+
 # ── 3) Main training script ───────────────────────────────────────────────
 if __name__ == '__main__':
     t0 = time.time()
