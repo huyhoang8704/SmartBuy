@@ -7,8 +7,8 @@ export const useLogIn = async ({
 }) => {
   let success = false;
   const authStore = useAuthStore();
-
-  const data = await $fetch("http://localhost:4000/auth/login", {
+  const serverUrl = process.env.SERVER_URL || "http://localhost:4000";
+  const data = await $fetch(`${serverUrl}/auth/login`, {
     method: "POST",
     body: JSON.stringify({
       email,

@@ -1,9 +1,11 @@
+const serverUrl = process.env.SERVER_URL || "http://localhost:4000";
+
 export const useTrackBehavior = async (
   action: "view" | "search" | "addtocart" | "transaction",
   payload: Record<string, any>
 ): Promise<boolean> => {
   let success = false;
-  const response = await $fetch("http://localhost:4000/behavior/track", {
+  const response = await $fetch(`${serverUrl}/behavior/track`, {
     method: "POST",
     headers: {
       Authorization: `Bearer ${localStorage.getItem("authToken")}`,

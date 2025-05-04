@@ -96,6 +96,8 @@ const cart = useCartStore();
 const isLoading = ref(false);
 const token = localStorage.getItem("authToken");
 
+const serverUrl = process.env.SERVER_URL || "http://localhost:4000";
+
 const notification = useNotification();
 
 // Track selected items
@@ -165,7 +167,7 @@ const checkout = async () => {
   useTrackBehavior("transaction", { selectedItems: selectedItems.value }).catch(
     (err) => console.warn("Tracking failed", err)
   );
-  const data = await $fetch("http://localhost:4000/order", {
+  const data = await $fetch(`${serverUrl}/order`, {
     headers: {
       Authorization: `Bearer ${token}`,
     },

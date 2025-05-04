@@ -11,7 +11,9 @@ export const useSignUp = async ({
 }) => {
   let success = false;
   try {
-    const data = await $fetch(`http://localhost:4000/auth/register`, {
+    const serverUrl = process.env.SERVER_URL || "http://localhost:4000";
+
+    const data = await $fetch(`${serverUrl}/auth/register`, {
       method: "POST",
       body: JSON.stringify({
         name,

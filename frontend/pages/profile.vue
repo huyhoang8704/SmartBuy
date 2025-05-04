@@ -90,9 +90,10 @@ const genderOptions = [
 
 const userId = localStorage.getItem("userId");
 const authToken = localStorage.getItem("authToken");
+const serverUrl = process.env.SERVER_URL || "http://localhost:4000";
 
 const fetchUserData = async () => {
-  const data = await $fetch(`http://localhost:4000/user/${userId}`, {
+  const data = await $fetch(`${serverUrl}/user/${userId}`, {
     headers: {
       Authorization: `Bearer ${authToken}`,
     },
@@ -117,7 +118,7 @@ watch(
 
 const submitChanges = () => {
   loading.value = true;
-  const data = $fetch(`http://localhost:4000/user/${userId}`, {
+  const data = $fetch(`${serverUrl}/user/${userId}`, {
     method: "PATCH",
     headers: {
       Authorization: `Bearer ${authToken}`,
