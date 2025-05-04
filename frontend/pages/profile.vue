@@ -1,13 +1,13 @@
 <template>
   <div class="container mx-auto py-8 px-4">
     <div class="max-w-xl mx-auto bg-white p-6 rounded-lg shadow-md">
-      <h2 class="text-2xl font-semibold text-gray-800 mb-6">Edit Profile</h2>
+      <h2 class="text-2xl font-semibold text-gray-800 mb-6">Chỉnh sửa hồ sơ</h2>
 
       <n-form @submit.prevent="submitChanges">
-        <n-form-item label="Name">
+        <n-form-item label="Họ và tên">
           <n-input
             v-model:value="user.name"
-            placeholder="Enter your name"
+            placeholder="Nhập họ và tên"
             :clearable="true" />
         </n-form-item>
 
@@ -16,38 +16,38 @@
             v-model:value="user.email"
             disabled
             type="email"
-            placeholder="Enter your email"
+            placeholder="Nhập email"
             :clearable="true" />
         </n-form-item>
 
-        <n-form-item label="Phone Number">
+        <n-form-item label="Số điện thoại">
           <n-input
             v-model:value="user.phone"
             type="tel"
-            placeholder="Enter your phone number"
+            placeholder="Nhập số điện thoại"
             :clearable="true" />
         </n-form-item>
 
-        <n-form-item label="Address">
+        <n-form-item label="Địa chỉ">
           <n-input
             v-model:value="user.address"
-            placeholder="Enter your address"
+            placeholder="Nhập địa chỉ"
             :clearable="true" />
         </n-form-item>
 
-        <n-form-item label="Age">
+        <n-form-item label="Tuổi">
           <n-input
             v-model:value="user.age"
             type="number"
-            placeholder="Enter your age"
+            placeholder="Nhập tuổi"
             :clearable="true" />
         </n-form-item>
 
-        <n-form-item label="Gender">
+        <n-form-item label="Giới tính">
           <n-select
             v-model:value="user.gender"
             :options="genderOptions"
-            placeholder="Select your gender" />
+            placeholder="Chọn giới tính" />
         </n-form-item>
 
         <div class="mt-6 flex justify-end">
@@ -56,7 +56,7 @@
             type="primary"
             :loading="loading"
             @click="submitChanges">
-            Submit Changes
+            Lưu thay đổi
           </n-button>
         </div>
       </n-form>

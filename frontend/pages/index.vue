@@ -20,7 +20,7 @@
       <div
         class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div class="flex items-center gap-3 ml-auto">
-          <span class="text-sm text-gray-600">Sort by:</span>
+          <span class="text-sm text-gray-600">Sắp xếp theo:</span>
           <span>
             <n-select
               v-model:value="selectedSort"
@@ -52,6 +52,15 @@
             </div>
           </div>
         </template>
+      </div>
+
+      <!-- No Products Found -->
+      <div
+        v-if="!productGridLoading && productsData.length === 0"
+        class="text-center py-12">
+        <p class="text-gray-500">
+          Không tìm thấy sản phẩm nào phù hợp với bộ lọc của bạn.
+        </p>
       </div>
 
       <!-- Product Grid -->
@@ -104,12 +113,6 @@
         </template>
       </div>
 
-      <div
-        v-if="productsData.length && productsData.length === 0"
-        class="text-center py-12">
-        <p class="text-gray-500">No products found matching your filters</p>
-      </div>
-
       <!-- Pagination -->
       <div
         v-if="productsData.length && productsData.length > 0"
@@ -128,8 +131,8 @@
   <button
     v-if="showScrollToTop"
     @click="scrollToTop"
-    class="fixed bottom-4 right-4 bg-green-600 text-white p-2 rounded-full shadow-lg transition-transform transform hover:scale-110 hover:bg-green-700">
-    Back to top
+    class="fixed bottom-4 right-4 px-4 bg-green-600 text-white p-2 rounded-full shadow-lg transition-transform transform hover:scale-110 hover:bg-green-700">
+    Về đầu trang
   </button>
 </template>
 
@@ -156,11 +159,11 @@ const isSidebarOpen = ref(true);
 
 // Sort options based on API parameters (sortKey: "price" or "rating", sortValue: "asc" or "desc")
 const sortOptions = [
-  { label: "Default", value: "" }, // Updated value to null for default
-  { label: "Price: Low to High", value: "price-asc" },
-  { label: "Price: High to Low", value: "price-desc" },
-  { label: "Rating: Low to High", value: "rating-asc" },
-  { label: "Rating: High to Low", value: "rating-desc" },
+  { label: "Mặc định", value: "" }, // Updated value to null for default
+  { label: "Giá: Thấp đến cao", value: "price-asc" },
+  { label: "Giá: Cao đến Thấp", value: "price-desc" },
+  { label: "Đánh giá: Thấp đến cao", value: "rating-asc" },
+  { label: "Đánh giá: Cao đến Thấp", value: "rating-desc" },
 ];
 
 // Split the selected sort option into sortKey and sortValue
@@ -204,9 +207,9 @@ const fetchProducts = async () => {
 // Watch for changes that require data refetching
 watch(
   [currentPage, pageSize, selectedSort, searchQuery, selectedCategory],
-  (
-    [newPage, newLimit, newSort, newSearch],
-    [oldPage, oldLimit, oldSort, oldSearch]
+  async (
+    [newPage, newLimit, newSort, newSearch, newCategory],
+    [oldPage, oldLimit, oldSort, oldSearch, oldCategory]
   ) => {
     // Only trigger if search is empty or long enough
     if (
@@ -216,11 +219,12 @@ watch(
       if (
         newLimit !== oldLimit ||
         newSearch !== oldSearch ||
-        newSort !== oldSort
+        newSort !== oldSort ||
+        newCategory !== oldCategory
       ) {
         currentPage.value = 1; // Reset page if any of those change
       }
-      fetchProducts();
+      await fetchProducts();
       scrollToTop();
     }
   },

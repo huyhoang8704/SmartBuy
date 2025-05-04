@@ -65,7 +65,12 @@
           class="pt-4 border-t mt-4 font-bold flex items-center justify-between">
           Tổng cộng: {{ cart.totalPrice.toLocaleString() }} đ
           <NuxtLink to="/checkout">
-            <n-button size="medium" type="primary" round @click="closeCart">
+            <n-button
+              :disabled="!cart.items.length"
+              size="medium"
+              type="primary"
+              round
+              @click="closeCart">
               Đặt hàng
             </n-button>
           </NuxtLink>

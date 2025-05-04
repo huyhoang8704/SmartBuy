@@ -181,13 +181,13 @@ const checkout = async () => {
       if (response.status !== 201) {
         console.log(response);
         notification.error({
-          title: "Order Failed",
-          content: "Something went wrong, please try again!",
+          title: "Đặt hàng thất bại",
+          content: "Đã xảy ra lỗi, vui lòng thử lại!",
         });
       } else {
         notification.success({
-          title: "Order Success",
-          content: "Your order has been placed successfully!",
+          title: "Đặt hàng thành công",
+          content: "Đơn hàng của bạn đã được đặt thành công!",
           duration: 3000,
         });
         cart.fetchCart();

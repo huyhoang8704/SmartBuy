@@ -5,26 +5,35 @@ export const useLogIn = async ({
   email: string;
   password: string;
 }) => {
-  let success = false;
+  let status = {
+    success: false,
+    message: "",
+  };
   const authStore = useAuthStore();
   const serverUrl = process.env.SERVER_URL || "http://localhost:4000";
-  const data = await $fetch(`${serverUrl}/auth/login`, {
-    method: "POST",
-    body: JSON.stringify({
-      email,
-      password,
-    }),
-    onResponse({ response }) {
-      if (response._data) {
-        console.log(response._data);
-        // Store the token in localStorage
-        authStore.logIn(response._data.token, response._data.user._id);
-        success = true;
-      } else {
-        console.error("Login failed:", response._data);
-      }
-    },
-  });
 
-  return success;
+  try {
+    const response = await $fetch(`${serverUrl}/auth/login`, {
+      method: "POST",
+      body: JSON.stringify({
+        email,
+        password,
+      }),
+    });
+
+    authStore.logIn(response.token, response.user._id);
+    status.success = true;
+    status.message = "Login successful.";
+  } catch (error) {
+    status.success = false;
+
+    // Try to extract a meaningful error message
+    if (error.response && error.response._data) {
+      status.message = error.response._data.message || "Login failed.";
+    } else {
+      status.message = error.message || "Network error. Please try again.";
+    }
+  }
+
+  return status;
 };

@@ -15,11 +15,11 @@ const emit = defineEmits(["navigate"]);
 
 const menuOptions = [
   {
-    label: "Profile",
+    label: "Hồ sơ",
     key: "profile",
   },
   {
-    label: "Purchase History",
+    label: "Lịch sử mua hàng",
     key: "history",
   },
 ];

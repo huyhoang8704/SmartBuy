@@ -1,3 +1,4 @@
+// composables/useSignUp.ts
 import { useLogIn } from "./useLogIn";
 
 export const useSignUp = async ({
@@ -9,34 +10,35 @@ export const useSignUp = async ({
   email: string;
   password: string;
 }) => {
-  let success = false;
+  const serverUrl = process.env.SERVER_URL || "http://localhost:4000";
+
+  let status = {
+    success: false,
+    message: "",
+  };
+
   try {
-    const serverUrl = process.env.SERVER_URL || "http://localhost:4000";
-
-    const data = await $fetch(`${serverUrl}/auth/register`, {
+    const response = await $fetch(`${serverUrl}/auth/register`, {
       method: "POST",
-      body: JSON.stringify({
-        name,
-        email,
-        password,
-      }),
-      headers: {
-        "Content-Type": "application/json", // Ensure proper content type
-      },
-      onResponse({ response }) {
-        // Check the response status code and handle accordingly
-        if (response._data.status === 201) {
-          success = true;
-          // After successful sign-up, attempt to log in
-        } else {
-          console.error("Sign-up failed:", response._data);
-        }
-      },
+      body: { name, email, password },
     });
-  } catch (err) {
-    console.error("Error during sign-up:", err);
-  }
-  success = await useLogIn({ email, password });
 
-  return success;
+    // Attempt to log in after successful signup
+    const loginStatus = await useLogIn({ email, password });
+    status.success = loginStatus.success;
+    status.message = loginStatus.success
+      ? "Signup successful, you are now logged in."
+      : loginStatus.message;
+  } catch (error: any) {
+    status.success = false;
+
+    // Try to extract a meaningful error message
+    if (error.response && error.response._data) {
+      status.message = error.response._data.message || "Signup failed.";
+    } else {
+      status.message = error.message || "Network error. Please try again.";
+    }
+  }
+
+  return status;
 };
