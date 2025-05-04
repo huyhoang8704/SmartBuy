@@ -8,7 +8,9 @@ export const useProducts = async (params: {
   search?: string | number;
   category?: string | null;
 }) => {
-  return await $fetch("http://localhost:4000/", {
+  const serverUrl = process.env.SERVER_URL || "http://localhost:4000";
+
+  return await $fetch(`${serverUrl}`, {
     query: {
       page: params.page,
       limit: params.limit,

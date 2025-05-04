@@ -1,6 +1,8 @@
 import { defineStore } from "pinia";
 import { useAuthStore } from "@/stores/auth"; // Adjust if path differs
 
+const serverUrl = process.env.SERVER_URL || "http://localhost:4000";
+
 export const useCartStore = defineStore("cart", {
   state: () => ({
     items: [] as Array<{
@@ -68,7 +70,7 @@ export const useCartStore = defineStore("cart", {
       }
 
       try {
-        const response = await $fetch("http://localhost:4000/cart/", {
+        const response = await $fetch(`${serverUrl}/cart/`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -101,7 +103,7 @@ export const useCartStore = defineStore("cart", {
       if (!userId) return false;
 
       try {
-        await $fetch("http://localhost:4000/cart/add-product", {
+        await $fetch(`${serverUrl}/cart/add-product`, {
           method: "POST",
           headers: {
             Authorization: `Bearer ${localStorage.getItem("authToken")}`,
@@ -127,7 +129,7 @@ export const useCartStore = defineStore("cart", {
       if (!userId) return false;
 
       try {
-        const response = await $fetch(`http://localhost:4000/cart/`, {
+        const response = await $fetch(`${serverUrl}/cart/`, {
           method: "PUT",
           headers: {
             Authorization: `Bearer ${localStorage.getItem("authToken")}`,
@@ -145,7 +147,7 @@ export const useCartStore = defineStore("cart", {
       if (!userId) return false;
 
       try {
-        await $fetch(`http://localhost:4000/cart/${productId}`, {
+        await $fetch(`${serverUrl}/cart/${productId}`, {
           method: "DELETE",
           headers: {
             Authorization: `Bearer ${localStorage.getItem("authToken")}`,

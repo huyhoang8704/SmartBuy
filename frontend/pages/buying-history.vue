@@ -94,9 +94,10 @@
 const orders = ref([]);
 const expandedOrders = ref(new Set());
 const token = localStorage.getItem("authToken");
+const serverUrl = process.env.SERVER_URL || "http://localhost:4000";
 
 const fetchOrders = async () => {
-  const data = await $fetch("http://localhost:4000/order/user", {
+  const data = await $fetch(`${serverUrl}/order/user`, {
     headers: {
       Authorization: `Bearer ${token}`,
     },
