@@ -2,21 +2,39 @@ version: '3.8'
 
 services:
   backend:
+    build:
+      context: ./backend
+      dockerfile: dockerfile
     container_name: ecommerce-backend
-    build: .
     ports:
       - "4000:4000"
     volumes:
-      - .:/app
+      - ./backend:/app # Cập nhật đường dẫn volumes
       - /app/node_modules
     env_file:
-      - .env
+      - ./backend/.env # Cập nhật đường dẫn file .env
+    networks:
+      - ecommerce-network
     depends_on:
       - mongo
       - kafka
       - zookeeper
+  spark:
+    build:
+      context: ./model
+    container_name: spark-processor
+    volumes:
+      - ./model:/app
+    depends_on:
+      - mongo
+      - kafka
     networks:
       - ecommerce-network
+    command:
+      - "/opt/spark/bin/spark-submit"
+      - "--packages"
+      - "org.apache.spark:spark-sql-kafka-0-10_2.12:3.3.0,org.mongodb.spark:mongo-spark-connector_2.12:3.0.1"
+      - "/app/spark_processor.py"
 
   mongo:
     image: mongo
@@ -28,19 +46,13 @@ services:
     networks:
       - ecommerce-network
 
-  zookeeper:
-    image: confluentinc/cp-zookeeper:latest
-    environment:
-      ZOOKEEPER_CLIENT_PORT: 2181
-    networks:
-      - ecommerce-network
-
   kafka:
     image: confluentinc/cp-kafka:latest
     depends_on:
       - zookeeper
+    restart: always
     ports:
-      - "9092:9092"  # để máy thật (Postman, debug tools) có thể kết nối nếu cần
+      - "9092:9092"
     environment:
       KAFKA_BROKER_ID: 1
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
@@ -55,21 +67,10 @@ services:
     networks:
       - ecommerce-network
 
-  spark:
-    image: bitnami/spark:latest
-    container_name: spark-processor
-    depends_on:
-      - kafka
-      - mongo
+  zookeeper:
+    image: confluentinc/cp-zookeeper:latest
     environment:
-      - SPARK_MODE=driver
-    volumes:
-      - ./kafka:/spark # Mount the local directory containing the Spark job
-    command:
-      - "/opt/bitnami/spark/bin/spark-submit"
-      - "--packages"
-      - "org.apache.spark:spark-sql-kafka-0-10_2.12:3.3.0,org.mongodb.spark:mongo-spark-connector_2.12:3.0.1"
-      - "/spark/spark_processor.py" # Path to your Spark job
+      ZOOKEEPER_CLIENT_PORT: 2181
     networks:
       - ecommerce-network
 
@@ -80,5 +81,3 @@ volumes:
 networks:
   ecommerce-network:
     driver: bridge
-
-

@@ -1,0 +1,16 @@
+
+FROM python:3.9-slim
+
+# Cài đặt thư viện cần thiết
+RUN apt-get update && apt-get install -y build-essential
+
+# Copy file mã nguồn vào container
+WORKDIR /app
+COPY model_trainer_mongo.py .
+COPY requirements.txt .
+
+# Cài dependencies
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Lệnh mặc định khi container chạy
+CMD ["python", "model_trainer_mongo.py"]
