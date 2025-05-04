@@ -1,10 +1,12 @@
 <template>
   <div class="max-w-5xl mx-auto p-4">
-    <h1 class="text-2xl font-bold mb-6">Lịch sử mua hàng</h1>
+    <h1 class="text-3xl font-bold mb-8 text-center text-gray-800">
+      Lịch sử mua hàng
+    </h1>
 
     <div
       v-if="orders.length === 0"
-      class="flex justify-center items-center h-40">
+      class="flex justify-center items-center h-40 bg-gray-50 rounded-lg shadow-inner">
       <n-empty description="Bạn chưa có đơn hàng nào" />
     </div>
 
@@ -12,24 +14,24 @@
       <div
         v-for="order in orders"
         :key="order._id"
-        class="p-4 border border-gray-200 rounded-2xl shadow-sm bg-white hover:shadow-md transition">
+        class="p-6 border border-gray-200 rounded-2xl shadow-sm bg-white hover:shadow-lg transition">
         <!-- Order Summary -->
-        <div class="flex justify-between items-center mb-2">
+        <div class="flex justify-between items-center mb-4">
           <div>
-            <div class="font-semibold text-gray-800">
+            <div class="font-semibold text-lg text-gray-800">
               Đơn hàng #ORD-{{ order._id.slice(-6).toUpperCase() }}
             </div>
-            <div class="text-xs text-gray-500">
+            <div class="text-sm text-gray-500">
               Ngày đặt:
               {{ new Date(order.createdAt).toLocaleDateString("vi-VN") }}
             </div>
-            <div class="text-sm text-red-500 font-semibold mt-1">
+            <div class="text-base text-red-500 font-semibold mt-2">
               Tổng: {{ order.totalAmount.toLocaleString() }}₫
             </div>
           </div>
           <div class="flex items-center gap-3">
             <span
-              class="text-xs px-2 py-0.5 rounded-full font-medium"
+              class="text-sm px-3 py-1 rounded-full font-medium"
               :class="{
                 'bg-yellow-100 text-yellow-700': order.status === 'pending',
                 'bg-green-100 text-green-700': order.status === 'completed',
@@ -51,40 +53,44 @@
         </div>
 
         <!-- Order Details -->
-        <div v-if="expandedOrders.has(order._id)" class="space-y-4 mt-3">
+        <transition name="fade">
           <div
-            v-for="item in order.items"
-            :key="item._id"
-            class="flex gap-4 items-start border-t pt-4">
-            <img
-              :src="item.productId.thumbnail_url"
-              alt="product image"
-              class="w-20 h-20 object-cover rounded-lg" />
-            <div>
-              <h2 class="font-medium text-base text-gray-900">
-                {{ item.productId.name }}
-              </h2>
-              <p class="text-sm text-gray-500">
-                {{ item.quantity }} x {{ item.price.toLocaleString() }}₫
-              </p>
+            v-if="expandedOrders.has(order._id)"
+            class="space-y-4 mt-4 bg-gray-50 p-4 rounded-lg shadow-inner">
+            <div
+              v-for="item in order.items"
+              :key="item._id"
+              class="flex gap-4 items-start border-t pt-4">
+              <img
+                :src="item.productId.thumbnail_url"
+                alt="product image"
+                class="w-20 h-20 object-cover rounded-lg shadow-sm" />
+              <div>
+                <h2 class="font-medium text-base text-gray-900">
+                  {{ item.productId.name }}
+                </h2>
+                <p class="text-sm text-gray-500">
+                  {{ item.quantity }} x {{ item.price.toLocaleString() }}₫
+                </p>
+              </div>
+            </div>
+
+            <!-- Payment and Total -->
+            <div class="flex justify-between items-center pt-3 border-t">
+              <span class="text-sm text-gray-500">
+                Phương thức thanh toán:
+                {{
+                  order.paymentMethod === "cash"
+                    ? "Tiền mặt"
+                    : order.paymentMethod
+                }}
+              </span>
+              <span class="font-semibold text-lg text-red-500">
+                Tổng: {{ order.totalAmount.toLocaleString() }}₫
+              </span>
             </div>
           </div>
-
-          <!-- Payment and Total -->
-          <div class="flex justify-between items-center pt-3 border-t">
-            <span class="text-sm text-gray-500">
-              Phương thức thanh toán:
-              {{
-                order.paymentMethod === "cash"
-                  ? "Tiền mặt"
-                  : order.paymentMethod
-              }}
-            </span>
-            <span class="font-semibold text-lg text-red-500">
-              Tổng: {{ order.totalAmount.toLocaleString() }}₫
-            </span>
-          </div>
-        </div>
+        </transition>
       </div>
     </div>
   </div>

@@ -91,6 +91,7 @@ const route = useRoute();
 const { data } = await useSingleProduct({ slug: route.params.slug });
 const cart = useCartStore();
 const notification = useNotification();
+const authStore = useAuthStore();
 
 const product = data.value.product;
 console.log(data.value);
@@ -106,11 +107,17 @@ const formatPrice = (price) => {
 };
 
 async function handleAddToCart(product) {
+  if (!authStore.isAuthenticated) {
+    localStorage.setItem("currentPageTrack", route.path);
+    navigateTo("/login");
+    return;
+  }
   useTrackBehavior("addtocart", {
     selectedItems: [{ productId: product._id, quantity: quantity.value }],
   })
     .catch((err) => console.warn("Tracking failed:", err))
     .then((success) => console.log("Tracked:", success));
+
   const success = await cart.addToCart(product, quantity.value);
   if (success) {
     notification.success({

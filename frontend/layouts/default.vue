@@ -17,7 +17,7 @@
             <n-input-group>
               <n-input
                 v-model:value="searchQuery"
-                placeholder="Search..."
+                placeholder="Tìm kiếm..."
                 round
                 size="medium"
                 @keyup.enter="navigateToSearch" />
@@ -37,10 +37,10 @@
                 round
                 color="#ff4d4f"
                 @click="logOut">
-                Log Out
+                Đăng xuất
               </n-button>
               <n-button v-else round color="#ff4d4f" @click="logIn">
-                Log In
+                Đăng nhập
               </n-button>
             </div>
             <!-- Mobile menu toggle -->
@@ -131,11 +131,13 @@ const authStore = useAuthStore();
 
 const logOut = () => {
   authStore.logOut(); // Log out and update state
-  navigateTo("/");
+  // navigateTo("/");
 };
 
 const logIn = () => {
+  localStorage.setItem("currentPageTrack", useRoute().path);
   navigateTo("/login");
+  return;
 };
 </script>
 

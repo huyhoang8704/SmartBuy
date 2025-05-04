@@ -7,8 +7,10 @@
       <!-- Login Card -->
       <n-card class="rounded-2xl shadow-lg w-full max-w-md">
         <div class="text-center mb-6">
-          <h2 class="text-2xl font-bold text-gray-800">Welcome Back</h2>
-          <p class="text-gray-600 mt-2">Log in to your MyShop account</p>
+          <h2 class="text-2xl font-bold text-gray-800">Chào mừng trở lại</h2>
+          <p class="text-gray-600 mt-2">
+            Đăng nhập vào tài khoản NeoBuy của bạn
+          </p>
         </div>
 
         <n-form>
@@ -17,30 +19,30 @@
             <n-input
               v-model:value="email"
               type="email"
-              placeholder="Enter your email"
+              placeholder="Nhập email của bạn"
               round
               class="login-input"
               @keyup.enter="logIn" />
           </n-form-item>
 
           <!-- Password Field -->
-          <n-form-item label="Password">
+          <n-form-item label="Mật khẩu">
             <n-input
               v-model:value="password"
               type="password"
-              placeholder="Enter your password"
+              placeholder="Nhập mật khẩu của bạn"
               class="login-input"
               show-password-on="click"
               @keyup.enter="logIn" />
           </n-form-item>
 
           <!-- Remember Me & Forgot Password -->
-          <div class="flex justify-between items-center mb-6">
-            <n-checkbox>Remember me</n-checkbox>
+          <!-- <div class="flex justify-between items-center mb-6">
+            <n-checkbox>Ghi nhớ đăng nhập</n-checkbox>
             <n-button text class="text-red-500 text-sm"
-              >Forgot Password?</n-button
+              >Quên mật khẩu?</n-button
             >
-          </div>
+          </div> -->
 
           <!-- Login Button -->
 
@@ -52,21 +54,21 @@
             color="#ff4d4f"
             class="text-lg font-medium"
             @click="logIn">
-            Login
+            Đăng nhập
           </n-button>
 
           <!-- Divider -->
           <div class="py-4 flex items-center">
             <div class="flex-1 border-t border-gray-200" />
-            <span class="px-4 text-sm text-gray-400">OR</span>
+            <span class="px-4 text-sm text-gray-400">HOẶC</span>
             <div class="flex-1 border-t border-gray-200" />
           </div>
 
           <!-- Sign Up Link -->
           <div class="text-center text-gray-600">
-            Don't have an account?
-            <NuxtLink to="/signup">
-              <n-button text class="text-red-500">Sign Up</n-button>
+            Bạn chưa có tài khoản?
+            <NuxtLink to="/signup" class="underline hover:text-orange-600">
+              Đăng ký
             </NuxtLink>
           </div>
         </n-form>
@@ -78,31 +80,53 @@
 </template>
 
 <script setup>
+import { useNotification } from "naive-ui";
 import { ref } from "vue";
 import { useLogIn } from "~/composables/api/useLogIn";
 
 definePageMeta({ layout: "blank" });
+const notification = useNotification();
 
 // Form data
 const email = ref("");
 const password = ref("");
 const loading = ref(false);
 
-const logIn = async () => {
-  let success = false;
-  loading.value = true;
-  if (email.value == "" || password.value == "") {
-    console.log("Fullfull all information");
-    return;
+const validateForm = () => {
+  if (!email.value || !password.value) {
+    notification.error({
+      content: "Vui lòng điền đầy đủ các trường bắt buộc.",
+      duration: 3000,
+    });
+    return false;
   }
-  success = await useLogIn({
+  return true;
+};
+
+const logIn = async () => {
+  if (!validateForm()) return;
+
+  loading.value = true;
+  const result = await useLogIn({
     email: email.value,
     password: password.value,
   });
-  if (success) {
-    loading.value = false;
-    navigateTo("/");
+  if (result.success) {
+    const redirectPath = localStorage.getItem("currentPageTrack");
+
+    if (redirectPath) {
+      localStorage.removeItem("currentPageTrack");
+      navigateTo(redirectPath);
+    } else {
+      navigateTo("/"); // Or dashboard, etc.
+    }
+  } else {
+    notification.error({
+      content: result.message,
+      duration: 3000,
+    });
   }
+  loading.value = false;
 };
 </script>
 
@@ -126,7 +150,7 @@ const logIn = async () => {
   border-radius: 1rem;
 }
 
-.social-btn:hover {
+social-btn:hover {
   background-color: #f9fafb;
 }
 

@@ -5,80 +5,76 @@
       <!-- Sign Up Card -->
       <n-card class="rounded-2xl shadow-lg w-full max-w-md">
         <div class="text-center mb-6">
-          <h2 class="text-2xl font-bold text-gray-800">Create Account</h2>
-          <p class="text-gray-600 mt-2">Sign up for a new MyShop account</p>
+          <h2 class="text-2xl font-bold text-gray-800">Tạo Tài Khoản</h2>
+          <p class="text-gray-600 mt-2">Đăng ký tài khoản NeoBuy mới</p>
         </div>
 
         <!-- Loading Spinner Wrap -->
-        <n-spin
-          :show="loading"
-          size="large"
-          class="absolute inset-0 flex items-center justify-center bg-gray-50 bg-opacity-70">
-          <n-form>
+        <n-spin :show="loading" size="large" class="relative w-full">
+          <n-form class="w-full" label-placement="top">
             <!-- Name Field -->
-            <n-form-item label="Full Name">
+            <n-form-item label="Họ và Tên" class="w-full">
               <n-input
                 v-model:value="fullName"
                 type="text"
-                placeholder="Enter your full name"
+                placeholder="Nhập họ và tên của bạn"
                 round
-                class="login-input" />
+                class="w-full" />
             </n-form-item>
 
             <!-- Email Field -->
-            <n-form-item label="Email">
+            <n-form-item label="Email" class="w-full">
               <n-input
                 v-model:value="email"
                 type="email"
-                placeholder="Enter your email"
+                placeholder="Nhập email của bạn"
                 round
-                class="login-input" />
+                class="w-full" />
             </n-form-item>
 
             <!-- Password Field -->
-            <n-form-item label="Password">
+            <n-form-item label="Mật Khẩu" class="w-full">
               <n-input
                 v-model:value="password"
                 type="password"
-                placeholder="Create a password"
+                placeholder="Nhập mật khẩu"
                 show-password-on="click"
-                class="login-input" />
+                class="w-full" />
             </n-form-item>
 
             <!-- Confirm Password -->
-            <n-form-item label="Confirm Password">
+            <n-form-item label="Xác Nhận Mật Khẩu" class="w-full">
               <n-input
                 v-model:value="confirmPassword"
                 type="password"
-                placeholder="Confirm your password"
+                placeholder="Xác nhận mật khẩu của bạn"
                 show-password-on="click"
-                class="login-input" />
+                class="w-full" />
             </n-form-item>
 
             <!-- Sign Up Button -->
             <n-button
               tag="a"
-              type="primary"
+              type="success"
               block
               round
-              color="#ff4d4f"
-              class="text-lg font-medium"
+              class="text-lg font-medium w-full"
               @click="signUp">
-              Sign Up
+              Đăng Ký
             </n-button>
 
             <!-- Divider -->
             <div class="py-4 flex items-center">
               <div class="flex-1 border-t border-gray-200" />
-              <span class="px-4 text-sm text-gray-400">OR</span>
+              <span class="px-4 text-sm text-gray-400">HOẶC</span>
               <div class="flex-1 border-t border-gray-200" />
             </div>
 
             <!-- Login Link -->
             <div class="text-center text-gray-600">
-              Already have an account?
-              <NuxtLink to="/login">
-                <n-button text class="text-red-500">Login</n-button>
+              Đã có tài khoản?
+              <NuxtLink to="/login" class="underline hover:text-green-600">
+                Đăng Nhập
               </NuxtLink>
             </div>
           </n-form>
@@ -89,11 +85,14 @@
 </template>
 
 <script setup>
+import { useNotification } from "naive-ui";
 import { ref } from "vue";
 import { useSignUp } from "~/composables/api/useSignUp";
 
 definePageMeta({ layout: "blank" });
+const notification = useNotification();
 
+// Form data
 const fullName = ref("");
 const email = ref("");
 const password = ref("");
@@ -101,21 +100,38 @@ const confirmPassword = ref("");
 const loading = ref(false);
 
 const signUp = async () => {
-  let success = false;
-  loading.value = true;
-  if (password.value !== confirmPassword.value) {
-    alert("Password and confirm password are not matched");
-    loading.value = false;
+  if (
+    !fullName.value ||
+    !email.value ||
+    !password.value ||
+    !confirmPassword.value
+  ) {
+    notification.error({
+      content: "Vui lòng điền đầy đủ tất cả các trường.",
+      duration: 3000,
+    });
     return;
   }
-  success = await useSignUp({
+  if (password.value !== confirmPassword.value) {
+    notification.error({ content: "Mật khẩu không khớp.", duration: 3000 });
+    return;
+  }
+
+  loading.value = true;
+  const result = await useSignUp({
     name: fullName.value,
     email: email.value,
     password: password.value,
   });
-  if (success) {
-    loading.value = false;
-    navigateTo("/");
+
+  loading.value = false;
+
+  if (result.success) {
+    localStorage.getItem("currentPageTrack")
+      ? navigateTo(`${localStorage.getItem("currentPageTrack")}`)
+      : navigateTo("/");
+  } else {
+    notification.error({ content: result.message, duration: 3000 });
   }
 };
 </script>
@@ -146,5 +162,13 @@ const signUp = async () => {
 
 .n-spin {
   position: absolute;
+}
+:deep(.n-form-item) {
+  width: 100%;
+}
+
+:deep(.n-input) {
+  width: 100%;
+  border-radius: 1rem;
 }
 </style>

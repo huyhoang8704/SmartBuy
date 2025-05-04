@@ -2,9 +2,16 @@
   <div class="w-full min-h-screen flex flex-col md:flex-row gap-6">
     <!-- Sidebar (Sticky, height fit to content) -->
     <aside class="w-full md:w-64 flex-shrink-0 sticky top-30 z-5 self-start">
-      <CategoryMenu
-        :selectedCategory="selectedCategory"
-        @update:selectedCategory="(value) => (selectedCategory = value)" />
+      <button
+        class="md:hidden bg-gray-200 p-2 rounded mb-2"
+        @click="isSidebarOpen = !isSidebarOpen">
+        {{ isSidebarOpen ? "Hide Categories" : "Show Categories" }}
+      </button>
+      <div v-show="isSidebarOpen" class="transition-all duration-300">
+        <CategoryMenu
+          :selectedCategory="selectedCategory"
+          @update:selectedCategory="(value) => (selectedCategory = value)" />
+      </div>
     </aside>
 
     <!-- Main Content -->
@@ -13,12 +20,15 @@
       <div
         class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div class="flex items-center gap-3 ml-auto">
-          <span class="text-sm text-gray-600">Sort by:</span>
-          <n-select
-            v-model:value="selectedSort"
-            :options="sortOptions"
-            class="w-48"
-            round />
+          <span class="text-sm text-gray-600">Sắp xếp theo:</span>
+          <span>
+            <n-select
+              v-model:value="selectedSort"
+              :options="sortOptions"
+              class="min-w-[150px] w-auto"
+              round
+              :consistent-menu-width="false" />
+          </span>
         </div>
       </div>
 
@@ -26,19 +36,24 @@
       <div v-if="productGridLoading" class="flex justify-center py-12">
         <n-spin size="large" />
       </div>
+
+      <!-- No Products Found -->
       <div
-        v-else-if="productsData.length === 0"
-        class="flex justify-center py-12">
-        <span>No product found</span>
+        v-else-if="!productGridLoading && productsData.length === 0"
+        class="text-center py-12">
+        <p class="text-gray-500">
+          Không tìm thấy sản phẩm nào phù hợp với bộ lọc của bạn.
+        </p>
       </div>
 
       <!-- Product Grid -->
       <div
         v-else
-        class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 h-fit">
+        class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 px-8 h-fit">
         <template v-for="product in productsData" :key="product._id">
           <n-card
-            class="rounded-lg shadow-sm transition hover:shadow-md hover:scale-[1.01] cursor-pointer p-2">
+            class="rounded-lg shadow-sm transition hover:shadow-md hover:scale-[1.01] cursor-pointer p-2"
+            @click="viewProduct(product)">
             <div
               class="w-full aspect-square bg-gray-100 rounded-md overflow-hidden mb-2">
               <img
@@ -56,14 +71,10 @@
 
             <!-- Product Info -->
             <div class="space-y-1 min-h-[90px] flex flex-col justify-between">
-              <NuxtLink
-                :to="`/product/${product.slug}`"
-                class="hover:underline">
-                <h3
-                  class="text-sm font-semibold text-gray-800 truncate min-h-[1.25rem]">
-                  {{ product.name || "Unnamed Product" }}
-                </h3>
-              </NuxtLink>
+              <h3
+                class="text-sm font-semibold text-gray-800 truncate min-h-[1.25rem] text-start">
+                {{ product.name || "Unnamed Product" }}
+              </h3>
 
               <p class="text-gray-600 text-xs mt-0.5 truncate min-h-[1.75rem]">
                 {{ product.description || "No description available." }}
@@ -79,23 +90,10 @@
                 <span class="text-red-500 font-semibold text-xs">
                   {{ product.price ? formatPrice(product.price) : "N/A" }}
                 </span>
-                <n-button
-                  size="small"
-                  type="primary"
-                  round
-                  @click="handleAddToCart(product, $event)">
-                  Add
-                </n-button>
               </div>
             </div>
           </n-card>
         </template>
-      </div>
-
-      <div
-        v-if="productsData.length && productsData.length === 0"
-        class="text-center py-12">
-        <p class="text-gray-500">No products found matching your filters</p>
       </div>
 
       <!-- Pagination -->
@@ -107,16 +105,24 @@
           :page-count="pageCount"
           :page-size="pageSize"
           size="large"
-          round
-          @update:page-size="onPageSizeChange" />
+          round />
       </div>
     </div>
   </div>
+
+  <!-- Add a scroll-to-top button -->
+  <button
+    v-if="showScrollToTop"
+    @click="scrollToTop"
+    class="fixed bottom-4 right-4 px-4 bg-green-600 text-white p-2 rounded-full shadow-lg transition-transform transform hover:scale-110 hover:bg-green-700">
+    Về đầu trang
+  </button>
 </template>
 
 <script setup>
 import { ref, computed, watch, onMounted } from "vue";
 import { useProducts } from "~/composables/api/useProducts";
+import { useTrackBehavior } from "~/composables/api/useTrackBehavior";
 import CategoryMenu from "~/components/CategoryMenu.vue";
 const route = useRoute();
 
@@ -125,41 +131,60 @@ const productsData = ref([]);
 const pageCount = ref(0);
 const searchQuery = ref("");
 const selectedCategory = ref("all");
-const selectedSort = ref("rating-desc");
+const selectedSort = ref("");
 const currentPage = ref(1);
 const pageSize = ref(16);
 const cart = useCartStore();
 
 const productGridLoading = ref(false);
 
+// Sidebar state
+const isSidebarOpen = ref(true);
+
 // Sort options based on API parameters (sortKey: "price" or "rating", sortValue: "asc" or "desc")
 const sortOptions = [
-  { label: "Price: Low to High", value: "price-asc" },
-  { label: "Price: High to Low", value: "price-desc" },
-  { label: "Rating: Low to High", value: "rating-asc" },
-  { label: "Rating: High to Low", value: "rating-desc" },
+  { label: "Mặc định", value: "" }, // Updated value to null for default
+  { label: "Giá: Thấp đến cao", value: "price-asc" },
+  { label: "Giá: Cao đến Thấp", value: "price-desc" },
+  { label: "Đánh giá: Thấp đến cao", value: "rating-asc" },
+  { label: "Đánh giá: Cao đến Thấp", value: "rating-desc" },
 ];
 
 // Split the selected sort option into sortKey and sortValue
 const sortParams = computed(() => {
+  if (selectedSort.value === "") {
+    return null; // Return null for default sorting
+  }
   const [key, value] = selectedSort.value.split("-");
   return { sortKey: key, sortValue: value };
 });
 
+// Scroll-to-top functionality
+const showScrollToTop = ref(false);
+
+const scrollToTop = () => {
+  window.scrollTo({ top: 0, behavior: "smooth" });
+};
+
+window.addEventListener("scroll", () => {
+  showScrollToTop.value = window.scrollY > 300;
+});
+
 // Fetch products from API
 const fetchProducts = async () => {
-  console.log("Calling fetchProducts");
   productGridLoading.value = true;
-  const { data } = await useProducts({
+
+  const data = await useProducts({
     page: currentPage.value,
     limit: pageSize.value,
-    sortKey: sortParams.value.sortKey,
-    sortValue: sortParams.value.sortValue,
+    sortKey: sortParams.value?.sortKey ?? null,
+    sortValue: sortParams.value?.sortValue ?? null,
     category: selectedCategory.value === "all" ? null : selectedCategory.value,
     search: route.params.slug,
   });
-  productsData.value = data.value.products;
-  pageCount.value = data.value.totalPages ?? 1;
+
+  productsData.value = data.products;
+  pageCount.value = data.totalPages ?? 1;
   productGridLoading.value = false;
 };
 
@@ -178,23 +203,21 @@ watch(
       currentPage.value = 1; // Reset page if any of those change
     }
     fetchProducts();
+    scrollToTop();
   },
   { immediate: true }
 );
 
 // Initial data load
 onMounted(() => {
-  selectedCategory.value = "";
+  selectedCategory.value = ""; // Default to empty category
   fetchProducts();
 });
 
-// Format price to Vietnamese currency
-const formatPrice = (price) => {
-  return new Intl.NumberFormat("vi-VN", {
-    style: "currency",
-    currency: "VND",
-  }).format(price);
-};
+// Add automatic scroll-to-top after page change
+watch(currentPage, () => {
+  scrollToTop();
+});
 
 // Handle image loading errors
 const handleImageError = (e) => {
@@ -203,16 +226,30 @@ const handleImageError = (e) => {
   e.target.onerror = null;
 };
 
-// Add product to cart
-function handleAddToCart(product) {
-  cart.addToCart(product);
+function viewProduct(product) {
+  useTrackBehavior("view", {
+    selectedItems: [{ productId: product._id, quantity: 1 }],
+  })
+    .then((success) => console.log("Tracked:", success))
+    .catch((err) => console.warn("Tracking failed:", err));
+
+  navigateTo(`/product/${product.slug}`);
+}
+
+function formatPrice(value) {
+  if (typeof value !== "number") return "";
+  return new Intl.NumberFormat("vi-VN", {
+    style: "currency",
+    currency: "VND",
+  }).format(value);
 }
 </script>
 
 <style scoped>
-/* Optional: Add consistent scale/bubbly hover effects */
+/* Enhance product card hover effects */
 :deep(.n-card:hover) {
-  transform: scale(1.01);
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+  transform: scale(1.05);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 </style>
