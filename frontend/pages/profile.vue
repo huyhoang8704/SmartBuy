@@ -35,6 +35,13 @@
             :clearable="true" />
         </n-form-item>
 
+        <n-form-item label="Nghề nghiệp">
+          <n-input
+            v-model:value="user.occupation"
+            placeholder="Nhập nghề nghiệp"
+            :clearable="true" />
+        </n-form-item>
+
         <n-form-item label="Tuổi">
           <n-input
             v-model:value="user.age"
