@@ -1,6 +1,8 @@
 pipeline {
     agent any
-
+    tools {
+        nodejs 'nodejs' // Trùng với tên đã đặt ở bước trên
+    }
     // environment {
     //     DOCKER_IMAGE = "your-dockerhub-username/grab-backend"
     //     DOCKER_TAG = "latest"
