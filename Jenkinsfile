@@ -1,9 +1,5 @@
 pipeline {
-    agent {
-        docker {
-            image 'node:18'
-        }
-    }
+    agent any
 
     // environment {
     //     DOCKER_IMAGE = "your-dockerhub-username/grab-backend"
