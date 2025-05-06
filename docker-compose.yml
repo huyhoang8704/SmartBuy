@@ -1,0 +1,118 @@
+version: '3.8'
+
+services:
+  backend1:
+    container_name: ecommerce-backend1
+    build:
+      context: ./backend
+      dockerfile: dockerfile
+    ports:
+      - "4001:4000"
+    environment:
+      - MAPPED_PORT=4001
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+    env_file:
+      - ./backend/.env
+    depends_on:
+      - mongo
+      - kafka
+      - zookeeper
+    networks:
+      - ecommerce-network
+
+  backend2:
+    container_name: ecommerce-backend2
+    build:
+      context: ./backend
+      dockerfile: dockerfile
+    ports:
+      - "4002:4000"
+    environment:
+      - MAPPED_PORT=4002
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+    env_file:
+      - ./backend/.env
+    depends_on:
+      - mongo
+      - kafka
+      - zookeeper
+    networks:
+      - ecommerce-network
+  # Model Service
+  model:
+    container_name: ecommerce-model
+    build:
+      context: ./model
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    env_file:
+      - ./backend/.env
+    volumes:
+      - ./model:/app
+    networks:
+      - ecommerce-network
+  nginx:
+    image: nginx:latest
+    container_name: nginx-load-balancer
+    ports:
+      - "4000:80"
+    volumes:
+      - ./backend/nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - backend1
+      - backend2
+    networks:
+      - ecommerce-network
+
+  mongo:
+    image: mongo
+    container_name: mongodb
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+    networks:
+      - ecommerce-network
+
+  zookeeper:
+    image: confluentinc/cp-zookeeper:latest
+    container_name: zookeeper
+    restart: always
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+    networks:
+      - ecommerce-network
+
+  kafka:
+    image: confluentinc/cp-kafka:latest
+    container_name: kafka
+    depends_on:
+      - zookeeper
+    restart: always
+    ports:
+      - "9092:9092"  # Expose Kafka for external tools
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: |
+        PLAINTEXT://kafka:9092,
+        PLAINTEXT_HOST://localhost:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: |
+        PLAINTEXT:PLAINTEXT,
+        PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+    networks:
+      - ecommerce-network
+
+volumes:
+  mongo_data:
+
+networks:
+  ecommerce-network:
+    driver: bridge
