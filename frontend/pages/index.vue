@@ -5,7 +5,7 @@
       <button
         class="md:hidden bg-gray-200 p-2 rounded mb-2"
         @click="isSidebarOpen = !isSidebarOpen">
-        {{ isSidebarOpen ? "Hide Categories" : "Show Categories" }}
+        {{ isSidebarOpen ? "Ẩn danh mục" : "Hiện danh mục" }}
       </button>
       <div v-show="isSidebarOpen" class="transition-all duration-300">
         <CategoryMenu
@@ -82,7 +82,7 @@
               <div
                 v-else
                 class="w-full h-full bg-gray-300 flex items-center justify-center">
-                <span class="text-gray-500 text-xs">No image</span>
+                <span class="text-gray-500 text-xs">Không có ảnh</span>
               </div>
             </div>
 
@@ -140,6 +140,7 @@
 import { ref, computed, watch, onMounted } from "vue";
 import { useProducts } from "~/composables/api/useProducts";
 import { useTrackBehavior } from "~/composables/api/useTrackBehavior";
+import { useFormatPrice } from "~/composables/utils/useFormatters";
 import CategoryMenu from "~/components/CategoryMenu.vue";
 
 // State variables
@@ -151,6 +152,7 @@ const selectedSort = ref("");
 const currentPage = ref(1);
 const pageSize = ref(16);
 const cart = useCartStore();
+const { formatPrice } = useFormatPrice();
 
 const productGridLoading = ref(false);
 
@@ -258,14 +260,6 @@ function viewProduct(product) {
     .catch((err) => console.warn("Tracking failed:", err));
 
   navigateTo(`/product/${product.slug}`);
-}
-
-function formatPrice(value) {
-  if (typeof value !== "number") return "";
-  return new Intl.NumberFormat("vi-VN", {
-    style: "currency",
-    currency: "VND",
-  }).format(value);
 }
 </script>
 

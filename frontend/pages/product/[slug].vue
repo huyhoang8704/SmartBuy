@@ -81,30 +81,31 @@
 </template>
 
 <script setup>
-import { ref } from "vue";
+import { ref, onMounted } from "vue";
 import { useSingleProduct } from "~/composables/api/useSingleProduct";
-import RelatedProducts from "~/components/RelatedProducts.vue";
 import { useTrackBehavior } from "~/composables/api/useTrackBehavior";
-import { useNotification } from "naive-ui";
+import { useFormatPrice } from "~/composables/utils/useFormatters";
+import RelatedProducts from "~/components/RelatedProducts.vue";
 
+// Get route params
 const route = useRoute();
-const { data } = await useSingleProduct({ slug: route.params.slug });
-const cart = useCartStore();
-const notification = useNotification();
+const slug = route.params.slug;
+const cartStore = useCartStore();
+
+// State variables
+const product = ref(null);
+const quantity = ref(1);
+const isAddingToCart = ref(false);
+
+// Import formatPrice helper
+const { formatPrice } = useFormatPrice();
+
+const { data } = await useSingleProduct({ slug });
 const authStore = useAuthStore();
 
-const product = data.value.product;
+product.value = data.value.product;
 console.log(data.value);
 const relatedProducts = data.value.relatedProducts;
-
-const quantity = ref(1);
-
-const formatPrice = (price) => {
-  return new Intl.NumberFormat("vi-VN", {
-    style: "currency",
-    currency: "VND",
-  }).format(price);
-};
 
 async function handleAddToCart(product) {
   if (!authStore.isAuthenticated) {
@@ -118,7 +119,7 @@ async function handleAddToCart(product) {
     .catch((err) => console.warn("Tracking failed:", err))
     .then((success) => console.log("Tracked:", success));
 
-  const success = await cart.addToCart(product, quantity.value);
+  const success = await cartStore.addToCart(product, quantity.value);
   if (success) {
     notification.success({
       content: "Thêm vào giỏ hàng thành công",

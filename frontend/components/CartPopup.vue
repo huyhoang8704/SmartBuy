@@ -45,6 +45,9 @@
               <div class="font-medium">{{ item.name }}</div>
               <div class="text-sm text-gray-600">
                 Số lượng: {{ item.quantity }}
+                <span class="text-xs text-gray-500"
+                  >(Còn {{ item.stock }} sản phẩm)</span
+                >
               </div>
 
               <button
@@ -55,7 +58,7 @@
               </button>
 
               <div class="text-red-600 font-semibold mt-1">
-                Giá: {{ (item.price * item.quantity).toLocaleString() }} đ
+                Giá: {{ formatPrice(item.price * item.quantity) }}
               </div>
             </div>
           </div>
@@ -63,16 +66,9 @@
 
         <div
           class="pt-4 border-t mt-4 font-bold flex items-center justify-between">
-          Tổng cộng: {{ cart.totalPrice.toLocaleString() }} đ
-          <NuxtLink to="/checkout">
-            <n-button
-              :disabled="!cart.items.length"
-              size="medium"
-              type="primary"
-              round
-              @click="closeCart">
-              Đặt hàng
-            </n-button>
+          Tổng cộng: {{ formatPrice(cart.totalPrice) }}
+          <NuxtLink to="/cart">
+            <n-button type="primary" block> Xem giỏ hàng </n-button>
           </NuxtLink>
         </div>
       </div>
@@ -84,8 +80,10 @@
 import { ref, onMounted, watch } from "vue";
 import { onClickOutside, useEventListener } from "@vueuse/core";
 import { useCartStore } from "@/stores/cart";
+import { useFormatPrice } from "~/composables/utils/useFormatters";
 
 const cart = useCartStore();
+const { formatPrice } = useFormatPrice();
 const props = defineProps({ isOpen: Boolean });
 const emit = defineEmits(["close"]);
 const panelRef = ref(null);
