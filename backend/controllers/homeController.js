@@ -137,8 +137,92 @@ const recommendation = async (req, res) => {
     }
 };
 
+const getProductList = async (req, res) => {
+    const userId = req.user?.userId || null; // Get userId from JWT token
+    console.log("userId", userId);
+
+    let useRecommendation = false;
+    let recommendationIds = [];
+
+    if (userId) {
+        try {
+            const response = await axios.get(`http://model:8000/recommend/${userId}`);
+            const { recommendations } = response.data;
+
+            if (Array.isArray(recommendations) && recommendations.length > 0) {
+                useRecommendation = true;
+                recommendationIds = recommendations.map(id => new mongoose.Types.ObjectId(id));
+            }
+        } catch (error) {
+            console.error("Error fetching recommendations:", error.message);
+        }
+    }
+
+    // Build query
+    let query = {
+        deleted: false,
+    };
+
+    // Use recommendation filter if applicable
+    if (useRecommendation) {
+        query._id = { $in: recommendationIds };
+    }
+
+    // Filter by category
+    if (req.query.category) {
+        query.slugCategory = req.query.category;
+    }
+
+    // Search
+    if (req.query.search) {
+        const regex = searchHelper(req.query.search);
+        query.$or = [
+            { name: regex },
+            { description: regex },
+            { category: regex },
+        ];
+    }
+
+    // Sort
+    let sort = { createdAt: -1 };
+    if (req.query.sortKey && req.query.sortValue) {
+        sort = {};
+        sort[req.query.sortKey] = req.query.sortValue === "asc" ? 1 : -1;
+    }
+
+    // Pagination
+    const limit = parseInt(req.query.limit) || 15;
+    const page = parseInt(req.query.page) || 1;
+    const skip = (page - 1) * limit;
+
+    try {
+        const totalItems = await Product.countDocuments(query);
+        const totalPages = Math.ceil(totalItems / limit);
+
+        const products = await Product.find(query)
+            .sort(sort)
+            .limit(limit)
+            .skip(skip);
+
+        return res.status(200).json({
+            success: true,
+            user: userId || null,
+            totalItems,
+            totalPages,
+            products,
+        });
+    } catch (err) {
+        console.error("Error fetching products:", err.message);
+        return res.status(500).json({
+            success: false,
+            message: "Không thể lấy danh sách sản phẩm.",
+        });
+    }
+};
+
 
 module.exports = { 
     index,
-    recommendation
+    recommendation,
+    getProductList,
 };
