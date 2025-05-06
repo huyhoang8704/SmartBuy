@@ -3,11 +3,11 @@ require("dotenv").config();
 const { Kafka } = require("kafkajs");
 
 const kafka = new Kafka({
-  clientId: process.env.KAFKA_CLIENT_ID,
-  brokers: [process.env.KAFKA_BROKER],
+  clientId: 'ecommerce-tracker',
+  brokers: ['kafka:9092'],
 });
 
-const consumer = kafka.consumer({ groupId: process.env.KAFKA_GROUP_MONGO });
+const consumer = kafka.consumer({ groupId: 'group-mongo' });
 
 const buffer = [];
 const BATCH_SIZE = 100; // số lượng event tối đa mỗi lần lưu
@@ -30,7 +30,7 @@ const saveBatch = async () => {
 
 const startConsumer = async () => {
   await consumer.connect();
-  await consumer.subscribe({ topic: process.env.KAFKA_TOPIC, fromBeginning: true });
+  await consumer.subscribe({ topic: "user-behavior", fromBeginning: true });
 
   await consumer.run({
     eachMessage: async ({ topic, partition, message }) => {

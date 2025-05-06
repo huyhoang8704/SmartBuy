@@ -1,20 +1,27 @@
 # base image
 FROM node:16
 
-# app directory
+# install curl và netcat
+RUN apt-get update && apt-get install -y curl netcat
+
+# set working directory
 WORKDIR /app
 
-# copy files
+# copy package files
 COPY package*.json ./
 
 # install dependencies
 RUN npm install
 
-# copy all source code
+# copy app files
 COPY . .
 
-# expose port
+# copy wait-for.sh and set permission
+COPY wait-for.sh /wait-for.sh
+RUN chmod +x /wait-for.sh
+
+# expose app port
 EXPOSE 4000
 
-# start app
-CMD ["npm", "start"]
+# start app only after kafka is ready
+CMD ["/wait-for.sh", "kafka:9092", "--", "npm", "start"]

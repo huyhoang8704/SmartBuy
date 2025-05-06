@@ -2,8 +2,12 @@ require("dotenv").config();
 const { Kafka } = require("kafkajs");
 
 const kafka = new Kafka({
-  clientId: process.env.KAFKA_CLIENT_ID,
-  brokers: [process.env.KAFKA_BROKER],
+  clientId: 'ecommerce-tracker',
+  brokers: ['kafka:9092'],
+  retry: {
+    initialRetryTime: 300,
+    retries: 10,
+  },
 });
 
 const producer = kafka.producer();
@@ -11,7 +15,7 @@ const producer = kafka.producer();
 const produceEvent = async (topic, message) => {
   await producer.connect();
   await producer.send({
-    topic: topic || process.env.KAFKA_TOPIC,
+    topic: topic || "user-behavior",
     messages: [{ value: JSON.stringify(message) }],
   });
   await producer.disconnect();
