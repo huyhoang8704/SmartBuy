@@ -62,7 +62,10 @@ def write_to_mongo(batch_df, batch_id):
     if count > 0:
         print(f" Batch {batch_id}: writing {count} rows to processed_behavior")
     batch_df.write \
-        .format("mongodb") \
+        .format("mongo") \
+        .option("spark.mongodb.connection.uri", "mongodb+srv://huyhoang8704:huyhoang8704@cluster0.zpf0zj3.mongodb.net/ecommerce.processed_behavior?retryWrites=true&w=majority&appName=Cluster0") \
+        .option("spark.mongodb.database", "ecommerce") \
+        .option("spark.mongodb.collection", "processed_behavior") \
         .mode("append") \
         .save()
 
@@ -71,6 +74,7 @@ df_grouped.writeStream \
     .outputMode("update") \
     .option("checkpointLocation", "/tmp/spark-checkpoint") \
     .start()
+
 
 # 8. Load mô hình LightFM và các encoder
 try:
@@ -100,15 +104,15 @@ df_active_users = df_scored \
     .groupBy(
         window(col("event_time"), "1 minute"),
         col("visitorid")
-    ).count().select("visitorid").dropDuplicates()
+    ).count().select("visitorid")
 
 def predict_and_store(batch_df, batch_id):
-    users = [row["visitorid"] for row in batch_df.collect()]
+    users = list(set(row["visitorid"] for row in batch_df.collect()))
     print(f" Batch {batch_id}: users to predict = {users}")
     if not users:
         return
 
-    client = MongoClient("mongodb+srv://huyhoang8704:huyhoang8704@cluster0.zpf0zj3.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0")
+    client = MongoClient("mongodb+srv://huyhoang8704:huyhoang8704@cluster0.zpf0zj3.mongodb.net/ecommerce.processed_behavior?retryWrites=true&w=majority&appName=Cluster0")
     db = client["ecommerce"]
     coll = db["recommendations"]
 
@@ -133,4 +137,7 @@ df_active_users.writeStream \
     .trigger(processingTime="30 seconds") \
     .option("checkpointLocation", "/tmp/recommend-checkpoint") \
     .start() \
-    .awaitTermination()
+
+
+# 11. Chạy Spark Streaming
+spark.streams.awaitAnyTermination()

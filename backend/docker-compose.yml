@@ -3,38 +3,22 @@ version: '3.8'
 services:
   backend:
     build:
-      context: ./backend
-      dockerfile: dockerfile
+      context: .
+      dockerfile: Dockerfile
     container_name: ecommerce-backend
     ports:
       - "4000:4000"
     volumes:
-      - ./backend:/app # Cập nhật đường dẫn volumes
+      - .:/app
       - /app/node_modules
     env_file:
-      - ./backend/.env # Cập nhật đường dẫn file .env
-    networks:
-      - ecommerce-network
+      - .env
     depends_on:
       - mongo
       - kafka
       - zookeeper
-  spark:
-    build:
-      context: ./model
-    container_name: spark-processor
-    volumes:
-      - ./model:/app
-    depends_on:
-      - mongo
-      - kafka
     networks:
       - ecommerce-network
-    command:
-      - "/opt/spark/bin/spark-submit"
-      - "--packages"
-      - "org.apache.spark:spark-sql-kafka-0-10_2.12:3.3.0,org.mongodb.spark:mongo-spark-connector_2.12:3.0.1"
-      - "/app/spark_processor.py"
 
   mongo:
     image: mongo
@@ -67,6 +51,7 @@ services:
     networks:
       - ecommerce-network
 
+
   zookeeper:
     image: confluentinc/cp-zookeeper:latest
     environment:
@@ -74,10 +59,10 @@ services:
     networks:
       - ecommerce-network
 
-
 volumes:
   mongo_data:
 
 networks:
   ecommerce-network:
     driver: bridge
+    external: true
