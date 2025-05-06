@@ -11,6 +11,7 @@ export const useCartStore = defineStore("cart", {
       price: number;
       quantity: number;
       image?: string;
+      stock?: number; // Added stock information
     }>,
   }),
 
@@ -37,6 +38,7 @@ export const useCartStore = defineStore("cart", {
             price: product.price,
             quantity,
             image: product.thumbnail_url,
+            stock: product.stock, // Added stock information
           });
           success = await this.createCartItem(product, quantity);
         }
@@ -83,6 +85,7 @@ export const useCartStore = defineStore("cart", {
             price: item.productId.price,
             quantity: item.quantity,
             image: item.productId.thumbnail_url,
+            stock: item.productId.stock, // Added stock information
           }));
         } else {
           this.items = [];

@@ -27,37 +27,31 @@
 
       <template v-else>
         <n-space vertical size="large">
-          <div class="text-xl font-bold pb-4">Xác nhận đơn hàng</div>
+          <div class="text-xl font-bold border-b pb-4">Xem lại đơn hàng</div>
 
-          <!-- Selected Products (Read-only) -->
+          <!-- Selected Products -->
           <div class="border rounded-md p-4">
             <div class="text-lg font-semibold mb-4">Sản phẩm đã chọn</div>
             <div
               v-for="item in checkout.selectedItems"
               :key="item.productId"
-              class="grid grid-cols-12 gap-4 items-center py-3 border-b last:border-0">
+              class="grid grid-cols-12 gap-2 items-center py-3 border-b last:border-0">
               <div class="col-span-2">
                 <img
                   :src="item.image"
                   alt="product"
                   class="w-16 h-16 object-cover rounded" />
               </div>
-              <div class="col-span-6 font-medium">
-                <div>{{ item.name }}</div>
-                <div class="text-sm text-gray-500">
-                  Số lượng: {{ item.quantity }}
-                </div>
-              </div>
-              <div class="col-span-4 text-right font-semibold">
+              <div class="col-span-6 font-medium">{{ item.name }}</div>
+              <div class="col-span-2 text-center">{{ item.quantity }}x</div>
+              <div class="col-span-2 text-right font-semibold">
                 {{ formatPrice(item.price * item.quantity) }}
               </div>
             </div>
 
-            <div class="flex justify-between py-4 mt-2 font-bold text-lg">
+            <div class="flex justify-between py-4 font-bold">
               <div>Tổng tiền:</div>
-              <div class="text-red-600">
-                {{ formatPrice(checkout.totalPrice) }}
-              </div>
+              <div>{{ formatPrice(checkout.totalPrice) }}</div>
             </div>
           </div>
 
@@ -109,14 +103,14 @@
           <div class="flex justify-between mt-6">
             <NuxtLink to="/cart">
               <n-button class="bg-gray-600 text-white">
-                <span class="mr-2">←</span> Quay lại giỏ hàng
+                Quay lại giỏ hàng
               </n-button>
             </NuxtLink>
             <n-button
               type="primary"
               size="large"
               :loading="isLoading"
-              @click="placeOrder">
+              @click="confirmOrder">
               XÁC NHẬN ĐẶT HÀNG
             </n-button>
           </div>
@@ -130,7 +124,7 @@
 import { useCheckoutStore } from "@/stores/checkout";
 import { useCartStore } from "@/stores/cart";
 import { useNotification } from "naive-ui";
-import { ref, onMounted } from "vue";
+import { ref, computed, onMounted } from "vue";
 import { useFormatPrice } from "~/composables/utils/useFormatters";
 import { useTrackBehavior } from "~/composables/api/useTrackBehavior";
 
@@ -176,7 +170,7 @@ const customerRules = {
 const paymentMethod = ref("cash");
 
 // Place order
-const placeOrder = async () => {
+const confirmOrder = async () => {
   // Validate form first
   try {
     await formRef.value?.validate();
@@ -203,7 +197,7 @@ const placeOrder = async () => {
 
   // Submit order
   try {
-    await $fetch(`${serverUrl}/order`, {
+    const response = await $fetch(`${serverUrl}/order`, {
       headers: {
         Authorization: `Bearer ${token}`,
       },

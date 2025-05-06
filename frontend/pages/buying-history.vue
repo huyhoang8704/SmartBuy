@@ -26,7 +26,7 @@
               {{ new Date(order.createdAt).toLocaleDateString("vi-VN") }}
             </div>
             <div class="text-base text-red-500 font-semibold mt-2">
-              Tổng: {{ order.totalAmount.toLocaleString() }}₫
+              Tổng: {{ formatPrice(order.totalAmount) }}
             </div>
           </div>
           <div class="flex items-center gap-3">
@@ -70,7 +70,7 @@
                   {{ item.productId.name }}
                 </h2>
                 <p class="text-sm text-gray-500">
-                  {{ item.quantity }} x {{ item.price.toLocaleString() }}₫
+                  {{ item.quantity }} x {{ formatPrice(item.price) }}
                 </p>
               </div>
             </div>
@@ -86,7 +86,7 @@
                 }}
               </span>
               <span class="font-semibold text-lg text-red-500">
-                Tổng: {{ order.totalAmount.toLocaleString() }}₫
+                Tổng: {{ formatPrice(order.totalAmount) }}
               </span>
             </div>
           </div>
@@ -97,8 +97,13 @@
 </template>
 
 <script setup>
+import { ref, onMounted } from "vue";
+import { useFormatPrice } from "~/composables/utils/useFormatters";
+
 const orders = ref([]);
+const loading = ref(true);
 const expandedOrders = ref(new Set());
+const { formatPrice } = useFormatPrice();
 const token = localStorage.getItem("authToken");
 const serverUrl = process.env.SERVER_URL || "http://localhost:4000";
 

@@ -58,7 +58,7 @@
 <script setup>
 import { ref, computed } from "vue";
 import { NCarousel, NCarouselItem, NCard, NRate, NButton } from "naive-ui";
-
+import { useFormatPrice } from "~/composables/utils/useFormatters";
 import { useTrackBehavior } from "~/composables/api/useTrackBehavior";
 
 const props = defineProps({
@@ -67,6 +67,9 @@ const props = defineProps({
     default: () => [],
   },
 });
+
+// Get formatPrice helper
+const { formatPrice } = useFormatPrice();
 
 // Responsive slides per view based on screen width
 const slidesPerView = computed(() => {
@@ -88,12 +91,6 @@ const handleAddToCart = (item, event) => {
   event.stopPropagation(); // Prevent navigating to product page when adding to cart
   // Add to cart logic would go here
 };
-
-const formatPrice = (price) =>
-  new Intl.NumberFormat("vi-VN", {
-    style: "currency",
-    currency: "VND",
-  }).format(price);
 
 function viewProduct(product) {
   console.log("Clicked!", product);
