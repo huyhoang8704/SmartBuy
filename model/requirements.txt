@@ -1,6 +1,10 @@
+apscheduler
+pymongo
 fastapi
-uvicorn[standard]
 lightfm
+numpy
+pandas
+pyspark
 scipy
 scikit-learn
-pandas
+uvicorn[standard]
