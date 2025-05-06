@@ -20,6 +20,11 @@ const orderSchema = new mongoose.Schema({
     enum: ["pending", "paid"],
     default: "pending"
   },
+  userInformation: {
+    name: String,
+    phone: String,
+    address: String
+  },
   createdAt: { type: Date, default: Date.now }
 });
 

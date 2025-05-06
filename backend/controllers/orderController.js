@@ -5,7 +5,9 @@ const Product = require("../models/productModel");
 const createOrderFromSelectedCartItems = async (req, res) => {
   try {
     const userId = req.user.userId;
+    console.log("User ID:", userId);
     const selectedItems = req.body.selectedItems;
+    const userInformation = req.body.userInformation || {};
 
     if (!Array.isArray(selectedItems) || selectedItems.length === 0) {
       return res.status(400).json({ message: "No items selected" });
@@ -42,7 +44,8 @@ const createOrderFromSelectedCartItems = async (req, res) => {
       userId,
       items: orderItems,
       totalAmount,
-      paymentMethod: req.body.paymentMethod || "cash"
+      paymentMethod: req.body.paymentMethod || "cash",
+      userInformation,
     });
 
     // 6. Xóa các sản phẩm đã mua khỏi cart
