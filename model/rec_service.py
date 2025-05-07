@@ -12,6 +12,8 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from scipy.sparse import coo_matrix, hstack
 from lightfm import LightFM
 from lightfm.evaluation import auc_score
+from pydantic import BaseModel
+
 
 # CONFIG
 MONGO_URI          = os.getenv(
@@ -187,6 +189,10 @@ scheduler.start()
 # Initial training
 train_from_scratch()
 
+
+# Redis connection
+
+
 # FastAPI endpoint
 app = FastAPI()
 
@@ -205,3 +211,37 @@ def recommend(user_id: str, k: int = 10):
     top_k    = np.argsort(-scores)[:k]
     recs     = item_enc.inverse_transform(top_k).tolist()
     return {"user": user_id, "recommendations": recs}
+
+# API: log_event
+class Behavior(BaseModel):
+    userId: str
+    productId: str
+    action: str
+
+@app.post("/log_event")
+def log_event(b: Behavior):
+    if model is None:
+        raise HTTPException(503, "Model not ready")
+    if b.action not in {"view", "addtocart", "transaction"}:
+        raise HTTPException(400, "Invalid action")
+
+    try:
+        u_idx = user_enc.transform([b.userId])[0]
+        i_idx = item_enc.transform([b.productId])[0]
+    except:
+        return {"status": "skipped (new user or item not in encoder)"}
+
+    weight_map = {"view": 1.0, "addtocart": 5.0, "transaction": 7.0}
+    weight = weight_map[b.action]
+
+    interaction = coo_matrix(
+        ([weight], ([u_idx], [i_idx])),
+        shape=(len(user_enc.classes_), len(item_enc.classes_))
+    )
+    try:
+        model.fit_partial(interaction, item_features=item_features, epochs=1, num_threads=2)
+        print(f"[fit_partial] updated model with {b.userId} - {b.productId} - {b.action}")
+        return {"status": "ok", "updated": True}
+    except Exception as e:
+        print("Error during fit_partial:", e)
+        return {"status": "error", "updated": False}

@@ -8,3 +8,5 @@ pyspark
 scipy
 scikit-learn
 uvicorn[standard]
+redis
+pydantic
