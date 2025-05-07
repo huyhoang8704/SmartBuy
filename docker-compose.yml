@@ -155,7 +155,7 @@ services:
 
   spark-worker:
     image: spark-custom
-    container_name: spark-worker
+    # container_name: spark-worker
     environment:
       - SPARK_MODE=worker
       - SPARK_MASTER_URL=spark://spark-master:7077
