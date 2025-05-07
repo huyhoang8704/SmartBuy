@@ -1,28 +1,6 @@
 version: '3.8'
 
 services:
-  # backend:
-  #   container_name: ecommerce-backend
-  #   build:
-  #     context: ./backend
-  #     dockerfile: dockerfile
-  #   ports:
-  #     - "4000:4000"
-  #   environment:
-  #     - MAPPED_PORT=4000
-  #   volumes:
-  #     - ./backend:/app
-  #     - /app/node_modules
-  #   env_file:
-  #     - ./backend/.env
-  #   depends_on:
-  #     - mongo
-  #     - kafka
-  #     - zookeeper
-  #   networks:
-  #     - ecommerce-network
-
-
   backend1:
     container_name: ecommerce-backend1
     build:
