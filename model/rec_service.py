@@ -194,36 +194,37 @@ train_from_scratch()
 # FastAPI endpoint
 app = FastAPI()
 
+def get_top_viewed_products(limit=10):
+    cursor = db[EVENT_COLLECTION].aggregate([
+        {"$match": {"action": "view"}},
+        {"$group": {"_id": "$productId", "views": {"$sum": 1}}},
+        {"$sort": {"views": -1}},
+        {"$limit": limit}
+    ])
+    return [doc["_id"] for doc in cursor]
+
 @app.get("/recommend/{user_id}")
 def recommend(user_id: str, k: int = 10):
     if model is None:
         raise HTTPException(503, "Model not ready")
-    try:
-        print(user_enc.classes_)
-        idx = user_enc.transform([user_id])[0]
-        n_items = item_enc.classes_.shape[0]
-        user_ids = np.full(n_items, idx, dtype=np.int32)
-        item_ids = np.arange(n_items, dtype=np.int32)
-        scores   = model.predict(user_ids, item_ids, item_features=item_features)
-        top_k    = np.argsort(-scores)[:k]
-        recs     = item_enc.inverse_transform(top_k).tolist()
-        return {"user": user_id, "recommendations": recs}
-    except ValueError:
-        # fallback nếu user mới
-        fallback_recs = (
-            db[EVENT_COLLECTION].aggregate([
-                {"$match": {"action": "view"}},
-                {"$group": {"_id": "$productId", "views": {"$sum": 1}}},
-                {"$sort": {"views": -1}},
-                {"$limit": k}
-            ])
-        )
-        recs = [doc["_id"] for doc in fallback_recs]
+
+    if user_id not in user_enc.classes_:
+        recs = get_top_viewed_products(limit=k)
         return {
             "user": user_id,
             "recommendations": recs,
             "note": "fallback: top viewed products"
         }
+
+    idx = user_enc.transform([user_id])[0]
+    n_items = item_enc.classes_.shape[0]
+    user_ids = np.full(n_items, idx, dtype=np.int32)
+    item_ids = np.arange(n_items, dtype=np.int32)
+    scores   = model.predict(user_ids, item_ids, item_features=item_features)
+    top_k    = np.argsort(-scores)[:k]
+    recs     = item_enc.inverse_transform(top_k).tolist()
+
+    return {"user": user_id, "recommendations": recs}
     
 
 # API: log_event
@@ -239,19 +240,22 @@ def log_event(b: Behavior):
     if b.action not in {"view", "addtocart", "transaction"}:
         raise HTTPException(400, "Invalid action")
 
-    try:
-        u_idx = user_enc.transform([b.userId])[0]
-        i_idx = item_enc.transform([b.productId])[0]
-    except:
+    # Kiểm tra nếu userId hoặc productId chưa nằm trong encoder
+    if b.userId not in user_enc.classes_ or b.productId not in item_enc.classes_:
+        print(f"[log_event] Skipped: unknown user or product - {b.userId}, {b.productId}")
         return {"status": "skipped (new user or item not in encoder)"}
 
-    weight_map = {"view": 1.0, "addtocart": 5.0, "transaction": 7.0}
+    # Tiếp tục cập nhật mô hình
+    u_idx = user_enc.transform([b.userId])[0]
+    i_idx = item_enc.transform([b.productId])[0]
+    weight_map = {"view": 1.0, "addtocart": 3.0,  "transaction": 5.0}
     weight = weight_map[b.action]
 
     interaction = coo_matrix(
         ([weight], ([u_idx], [i_idx])),
         shape=(len(user_enc.classes_), len(item_enc.classes_))
     )
+
     try:
         model.fit_partial(interaction, item_features=item_features, epochs=1, num_threads=2)
         print(f"[fit_partial] updated model with {b.userId} - {b.productId} - {b.action}")

@@ -1,0 +1,13 @@
+FROM bitnami/spark:3.4.1
+
+USER root
+
+# Cài Python dependencies
+RUN apt-get update && apt-get install -y python3-pip && \
+    pip3 install --no-cache-dir \
+        pandas>=1.0.5 \
+        pymongo \
+        requests && \
+    apt-get clean
+
+USER 1001
