@@ -12,7 +12,7 @@ const trackBehaviorUser = async (req, res) => {
       return res.status(400).json({ message: "userId và action là bắt buộc" });
     }
 
-    const kafkaTopic = process.env.KAFKA_TOPIC;
+    const kafkaTopic = "user-behavior";
     const logsToSend = [];
 
     if (action === "search" && selectedItems.length === 0) {
