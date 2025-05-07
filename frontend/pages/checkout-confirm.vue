@@ -191,9 +191,9 @@ const confirmOrder = async () => {
   };
 
   // Track user behavior
-  useTrackBehavior("place_order", {
-    selectedItems: orderData.selectedItems,
-  }).catch((err) => console.warn("Tracking failed", err));
+  // useTrackBehavior("place_order", {
+  //   selectedItems: orderData.selectedItems,
+  // }).catch((err) => console.warn("Tracking failed", err));
 
   // Submit order
   try {

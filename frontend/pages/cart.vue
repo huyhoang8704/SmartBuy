@@ -218,11 +218,6 @@ const proceedToPayment = () => {
       image: item.image,
     }));
 
-  // Track user behavior
-  useTrackBehavior("checkout_start", {
-    selectedItems: selectedCartItems,
-  }).catch((err) => console.warn("Tracking failed", err));
-
   // Save selected items to checkout store and navigate
   checkout.setSelectedItems(selectedItemsWithDetails);
   checkout.nextStep();

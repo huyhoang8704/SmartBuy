@@ -197,7 +197,7 @@ const placeOrder = async () => {
   };
 
   // Track user behavior
-  useTrackBehavior("place_order", {
+  useTrackBehavior("transaction", {
     selectedItems: orderData.selectedItems,
   }).catch((err) => console.warn("Tracking failed", err));
 
