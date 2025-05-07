@@ -65,30 +65,30 @@ def train_from_scratch(start_date=None, end_date=None):
     weight_map = {"view":1.0,"addtocart":5.0,"transaction":7.0}
     pdf = pdf[pdf["event"].isin(weight_map)].copy()
     pdf = pdf.sort_values("date").reset_index(drop=True)
-    cutoff   = int(len(pdf)*0.8)
-    df_train = pdf.iloc[:cutoff]
-    df_test  = pdf.iloc[cutoff:]
-    df_test  = df_test[
-        df_test["visitorid"].isin(df_train["visitorid"]) &
-        df_test["itemid"].isin(df_train["itemid"])
-    ]
+    # cutoff   = int(len(pdf)*0.8)
+    df_train = pdf
+    # df_test  = pdf.iloc[cutoff:]
+    # df_test  = df_test[
+    #     df_test["visitorid"].isin(df_train["visitorid"]) &
+    #     df_test["itemid"].isin(df_train["itemid"])
+    # ]
     user_enc = LabelEncoder().fit(df_train["visitorid"])
     item_enc = LabelEncoder().fit(df_train["itemid"])
 
     u_train = user_enc.transform(df_train["visitorid"])
     i_train = item_enc.transform(df_train["itemid"])
-    u_test  = user_enc.transform(df_test["visitorid"])
-    i_test  = item_enc.transform(df_test["itemid"])
+    # u_test  = user_enc.transform(df_test["visitorid"])
+    # i_test  = item_enc.transform(df_test["itemid"])
 
     w_train = df_train["event"].map(weight_map).values
-    w_test  = df_test["event"].map(weight_map).values
+    # w_test  = df_test["event"].map(weight_map).values
 
     n_users = u_train.max()+1
     n_items = i_train.max()+1
 
     interactions = {
       "train": coo_matrix((w_train,(u_train,i_train)), shape=(n_users,n_items)),
-      "test" : coo_matrix((w_test, (u_test, i_test )), shape=(n_users,n_items))
+    #   "test" : coo_matrix((w_test, (u_test, i_test )), shape=(n_users,n_items))
     }
 
     # 3) Load products — project `_id`, rename to `itemid`
@@ -109,7 +109,6 @@ def train_from_scratch(start_date=None, end_date=None):
     prod["itemid"] = prod["itemid"].astype(str)
 
     # keep only train items
-    print(df_train["itemid"].unique())
     prod = prod[prod["itemid"].isin(df_train["itemid"].unique())]
 
     # 4) Categorical item features
@@ -163,9 +162,8 @@ def train_from_scratch(start_date=None, end_date=None):
 
     # 8) Evaluate
     train_auc = auc_score(m, interactions["train"], item_features=item_features).mean()
-    test_auc  = auc_score(m, interactions["test"],  item_features=item_features).mean()
-    print(f"[retrain] Train AUC {train_auc:.4f}  Test AUC {test_auc:.4f}")
-
+    # test_auc  = auc_score(m, interactions["test"],  item_features=item_features).mean()
+    # print(f"[retrain] Train AUC {train_auc:.4f}  Test AUC {test_auc:.4f}")
     # 9) Persist
     with open(MODEL_PATH,"wb") as f:
         pickle.dump({
@@ -201,6 +199,7 @@ def recommend(user_id: str, k: int = 10):
     if model is None:
         raise HTTPException(503, "Model not ready")
     try:
+        print(user_enc.classes_)
         idx = user_enc.transform([user_id])[0]
         n_items = item_enc.classes_.shape[0]
         user_ids = np.full(n_items, idx, dtype=np.int32)
