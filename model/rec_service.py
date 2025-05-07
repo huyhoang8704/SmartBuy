@@ -201,7 +201,7 @@ def get_top_viewed_products(limit=10):
         {"$sort": {"views": -1}},
         {"$limit": limit}
     ])
-    return [doc["_id"] for doc in cursor]
+    return [str(doc["_id"]) for doc in cursor] 
 
 @app.get("/recommend/{user_id}")
 def recommend(user_id: str, k: int = 10):
@@ -210,6 +210,7 @@ def recommend(user_id: str, k: int = 10):
 
     if user_id not in user_enc.classes_:
         recs = get_top_viewed_products(limit=k)
+        print(f"[recommend] Skipped: unknown user - {user_id}")
         return {
             "user": user_id,
             "recommendations": recs,
@@ -223,6 +224,7 @@ def recommend(user_id: str, k: int = 10):
     scores   = model.predict(user_ids, item_ids, item_features=item_features)
     top_k    = np.argsort(-scores)[:k]
     recs     = item_enc.inverse_transform(top_k).tolist()
+    recs = [str(item) for item in recs]  # Convert ObjectId to string
 
     return {"user": user_id, "recommendations": recs}
     
