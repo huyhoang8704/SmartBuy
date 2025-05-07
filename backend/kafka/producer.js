@@ -15,7 +15,7 @@ const producer = kafka.producer();
 const produceEvent = async (topic, message) => {
   await producer.connect();
   await producer.send({
-    topic: topic || "user-behavior",
+    topic: "user-behavior",
     messages: [{ value: JSON.stringify(message) }],
   });
   await producer.disconnect();

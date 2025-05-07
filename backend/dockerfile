@@ -17,11 +17,12 @@ RUN npm install
 COPY . .
 
 # copy wait-for.sh and set permission
-COPY wait-for.sh /wait-for.sh
-RUN chmod +x /wait-for.sh
+# COPY wait-for.sh /wait-for.sh
+# RUN chmod +x /wait-for.sh
 
 # expose app port
 EXPOSE 4000
 
 # start app only after kafka is ready
-CMD ["/wait-for.sh", "kafka:9092", "--", "npm", "start"]
+CMD ["npm", "start"]
+# CMD ["/wait-for.sh", "kafka:9092", "--", "npm", "start"]
