@@ -202,15 +202,30 @@ def recommend(user_id: str, k: int = 10):
         raise HTTPException(503, "Model not ready")
     try:
         idx = user_enc.transform([user_id])[0]
+        n_items = item_enc.classes_.shape[0]
+        user_ids = np.full(n_items, idx, dtype=np.int32)
+        item_ids = np.arange(n_items, dtype=np.int32)
+        scores   = model.predict(user_ids, item_ids, item_features=item_features)
+        top_k    = np.argsort(-scores)[:k]
+        recs     = item_enc.inverse_transform(top_k).tolist()
+        return {"user": user_id, "recommendations": recs}
     except ValueError:
-        raise HTTPException(404, f"Unknown user {user_id}")
-    n_items = item_enc.classes_.shape[0]
-    user_ids = np.full(n_items, idx, dtype=np.int32)
-    item_ids = np.arange(n_items, dtype=np.int32)
-    scores   = model.predict(user_ids, item_ids, item_features=item_features)
-    top_k    = np.argsort(-scores)[:k]
-    recs     = item_enc.inverse_transform(top_k).tolist()
-    return {"user": user_id, "recommendations": recs}
+        # fallback nếu user mới
+        fallback_recs = (
+            db[EVENT_COLLECTION].aggregate([
+                {"$match": {"action": "view"}},
+                {"$group": {"_id": "$productId", "views": {"$sum": 1}}},
+                {"$sort": {"views": -1}},
+                {"$limit": k}
+            ])
+        )
+        recs = [doc["_id"] for doc in fallback_recs]
+        return {
+            "user": user_id,
+            "recommendations": recs,
+            "note": "fallback: top viewed products"
+        }
+    
 
 # API: log_event
 class Behavior(BaseModel):
