@@ -20,7 +20,7 @@
 
       <!-- Product Info -->
       <div class="space-y-6">
-        <h1 class="text-3xl font-bold text-gray-900">
+        <h1 class="text-3xl font-bold text-gray-900 roboto-unique">
           {{ product.name }}
         </h1>
 
@@ -65,11 +65,7 @@
             button-placement="both" />
         </div>
 
-        <n-button
-          type="primary"
-          size="large"
-          round
-          @click="handleAddToCart(product)">
+        <n-button type="primary" size="large" @click="handleAddToCart(product)">
           Thêm vào giỏ hàng
         </n-button>
       </div>

@@ -33,9 +33,7 @@
       </div>
 
       <!-- Loading state -->
-      <div
-        v-if="productsData.length === 0 && !productGridLoading"
-        class="flex justify-center py-12">
+      <div v-if="productGridLoading" class="flex justify-center py-12">
         <n-spin size="large" />
       </div>
 
@@ -67,13 +65,11 @@
       <div
         v-else
         class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 px-8 h-fit">
-        <template v-for="product in productsData" :key="product._id">
-          <ProductCard
-            v-for="product in productsData"
-            :key="product._id"
-            :product="product"
-            @click="viewProduct" />
-        </template>
+        <ProductCard
+          v-for="product in productsData"
+          :key="product._id"
+          :product="product"
+          @click="viewProduct(product)" />
       </div>
 
       <!-- Pagination -->
@@ -94,7 +90,7 @@
   <button
     v-if="showScrollToTop"
     @click="scrollToTop"
-    class="fixed bottom-4 right-4 px-4 bg-green-600 text-white p-2 rounded-full shadow-lg transition-transform transform hover:scale-110 hover:bg-green-700">
+    class="fixed bottom-4 right-4 px-4 hover:bg-white hover: text-black text-white hover:cursor-pointer bg-black p-2 transition-transform transform hover:scale-110">
     Về đầu trang
   </button>
 </template>
