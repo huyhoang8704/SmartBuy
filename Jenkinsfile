@@ -3,14 +3,6 @@ pipeline {
     tools {
         nodejs 'nodejs' // Trùng với tên đã đặt ở bước trên
     }
-    // environment {
-    //     DOCKER_IMAGE = "your-dockerhub-username/grab-backend"
-    //     DOCKER_TAG = "latest"
-    //     REGISTRY_CREDENTIALS = 'docker-hub-credentials' // ID của Docker Hub credentials trong Jenkins
-    //     SERVER_HOST = 'your-server-ip'
-    //     SERVER_USER = 'your-server-user'
-    //     SSH_CREDENTIALS = 'ssh-credentials-id' // ID của SSH credentials trong Jenkins
-    // }
 
     stages {
         stage('Checkout Code') {
@@ -37,50 +29,30 @@ pipeline {
                 }
             }
         }
+        stage('Deploy to Docker Hub') {
+            steps {
+                withDockerRegistry(credentialsId: 'docker-hub', url: 'https://index.docker.io/v1/') {
+                    echo "Building Docker image..."
+                    dir('backend') {
+                        sh 'docker build -t huyhoang8704/grabbootcamp:latest .'
+                    }
 
-        // stage('Build Docker Image') {
-        //     steps {
-        //         echo "Building Docker image..."
-        //         dir('backend') {
-        //             sh "docker build -t ${DOCKER_IMAGE}:${DOCKER_TAG} ."
-        //         }
-        //     }
-        // }
-
-        // stage('Push Docker Image') {
-        //     steps {
-        //         echo "Pushing Docker image to Docker Hub..."
-        //         script {
-        //             docker.withRegistry('', REGISTRY_CREDENTIALS) {
-        //                 sh "docker push ${DOCKER_IMAGE}:${DOCKER_TAG}"
-        //             }
-        //         }
-        //     }
-        // }
-
-        // stage('Deploy to Server') {
-        //     steps {
-        //         echo "Deploying application to server..."
-        //         sshagent([SSH_CREDENTIALS]) {
-        //             sh """
-        //             ssh -o StrictHostKeyChecking=no ${SERVER_USER}@${SERVER_HOST} << EOF
-        //             docker pull ${DOCKER_IMAGE}:${DOCKER_TAG}
-        //             docker stop grab-backend || true
-        //             docker rm grab-backend || true
-        //             docker run -d --name grab-backend -p 4000:4000 ${DOCKER_IMAGE}:${DOCKER_TAG}
-        //             EOF
-        //             """
-        //         }
-        //     }
-        // }
+                    echo "Pushing Docker image to Docker Hub..."
+                    dir('backend') {
+                        sh 'docker push huyhoang8704/grabbootcamp:latest'
+                    }
+                    echo "Deploying to production server..."
+                }
+            }
+        }
     }
 
     post {
         success {
-            echo "Pipeline completed successfully!"
+            echo "✅ CI/CD Pipeline succeeded!"
         }
         failure {
-            echo "Pipeline failed. Please check the logs."
+            echo "❌ CI/CD Pipeline failed!"
         }
     }
 }

@@ -3,7 +3,7 @@ import os
 import pickle
 import numpy as np
 import pandas as pd
-from datetime import datetime
+from datetime import datetime, timezone
 from fastapi import FastAPI, HTTPException
 from apscheduler.schedulers.background import BackgroundScheduler
 from pymongo import MongoClient
@@ -164,6 +164,13 @@ def train_from_scratch(start_date=None, end_date=None):
     train_auc = auc_score(m, interactions["train"], item_features=item_features).mean()
     # test_auc  = auc_score(m, interactions["test"],  item_features=item_features).mean()
     # print(f"[retrain] Train AUC {train_auc:.4f}  Test AUC {test_auc:.4f}")
+    # log AUC to MongoDB
+    db["model_metrics"].insert_one({
+    "timestamp": datetime.now(timezone.utc),
+    "train_auc": float(train_auc),
+    "n_users": int(n_users),
+    "n_items": int(n_items),
+    })
     # 9) Persist
     with open(MODEL_PATH,"wb") as f:
         pickle.dump({
