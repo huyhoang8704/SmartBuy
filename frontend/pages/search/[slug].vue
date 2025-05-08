@@ -33,13 +33,30 @@
       </div>
 
       <!-- Loading state -->
-      <div v-if="productGridLoading" class="flex justify-center py-12">
+      <div
+        v-if="productsData.length === 0 && !productGridLoading"
+        class="flex justify-center py-12">
         <n-spin size="large" />
+      </div>
+
+      <!-- Skeleton Loader -->
+      <div
+        v-if="productGridLoading"
+        class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 h-fit">
+        <template v-for="n in 8" :key="n">
+          <div class="rounded-lg shadow-sm p-2 animate-pulse">
+            <div class="w-full aspect-square bg-gray-200 rounded-md mb-2"></div>
+            <div class="space-y-2">
+              <div class="h-4 bg-gray-200 rounded"></div>
+              <div class="h-3 bg-gray-200 rounded w-3/4"></div>
+            </div>
+          </div>
+        </template>
       </div>
 
       <!-- No Products Found -->
       <div
-        v-else-if="!productGridLoading && productsData.length === 0"
+        v-if="!productGridLoading && productsData.length === 0"
         class="text-center py-12">
         <p class="text-gray-500">
           Không tìm thấy sản phẩm nào phù hợp với bộ lọc của bạn.
@@ -51,48 +68,11 @@
         v-else
         class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 px-8 h-fit">
         <template v-for="product in productsData" :key="product._id">
-          <n-card
-            class="rounded-lg shadow-sm transition hover:shadow-md hover:scale-[1.01] cursor-pointer p-2"
-            @click="viewProduct(product)">
-            <div
-              class="w-full aspect-square bg-gray-100 rounded-md overflow-hidden mb-2">
-              <img
-                v-if="product.thumbnail_url"
-                :src="product.thumbnail_url"
-                :alt="product.name || 'Product image'"
-                class="w-full h-full object-cover"
-                @error="(e) => handleImageError(e)" />
-              <div
-                v-else
-                class="w-full h-full bg-gray-300 flex items-center justify-center">
-                <span class="text-gray-500 text-xs">Không có ảnh</span>
-              </div>
-            </div>
-
-            <!-- Product Info -->
-            <div class="space-y-1 min-h-[90px] flex flex-col justify-between">
-              <h3
-                class="text-sm font-semibold text-gray-800 truncate min-h-[1.25rem] text-start">
-                {{ product.name || "Sản phẩm không tên" }}
-              </h3>
-
-              <p class="text-gray-600 text-xs mt-0.5 truncate min-h-[1.75rem]">
-                {{ product.description || "Không có mô tả cho sản phẩm này." }}
-              </p>
-
-              <n-rate
-                :value="product.rating || 0"
-                readonly
-                size="small"
-                class="text-yellow-400" />
-
-              <div class="flex justify-between items-center mt-1">
-                <span class="text-red-500 font-semibold text-xs">
-                  {{ product.price ? formatPrice(product.price) : "N/A" }}
-                </span>
-              </div>
-            </div>
-          </n-card>
+          <ProductCard
+            v-for="product in productsData"
+            :key="product._id"
+            :product="product"
+            @click="viewProduct" />
         </template>
       </div>
 
@@ -139,6 +119,8 @@ const currentPage = ref(1);
 const pageSize = ref(16);
 const productGridLoading = ref(false);
 const { formatPrice } = useFormatPrice();
+const authStore = useAuthStore(); // Access the auth store
+const isAuthenticated = computed(() => authStore.isAuthenticated); // Make it reactive
 
 // Sidebar state
 const isSidebarOpen = ref(true);
@@ -190,25 +172,31 @@ const fetchProducts = async () => {
   productGridLoading.value = false;
 };
 
-// Watch for changes that require data refetching
+// Watch for product-related changes
 watch(
-  [currentPage, pageSize, selectedSort, selectedCategory],
-  (
-    [newPage, newLimit, newSort, newCategory],
-    [oldPage, oldLimit, oldSort, oldCategory]
+  [currentPage, pageSize, selectedSort, searchQuery, selectedCategory],
+  async (
+    [newPage, newLimit, newSort, newSearch, newCategory],
+    [oldPage, oldLimit, oldSort, oldSearch, oldCategory]
   ) => {
     if (
+      newPage !== oldPage ||
       newLimit !== oldLimit ||
-      newCategory !== oldCategory ||
-      newSort !== oldSort
+      newSort !== oldSort ||
+      newSearch !== oldSearch ||
+      newCategory !== oldCategory
     ) {
-      currentPage.value = 1; // Reset page if any of those change
+      await fetchProducts();
     }
-    fetchProducts();
-    scrollToTop();
-  },
-  { immediate: true }
+  }
 );
+
+// Separate watch for authentication state
+watch(isAuthenticated, async (newAuth, oldAuth) => {
+  if (newAuth !== oldAuth) {
+    await fetchProducts();
+  }
+});
 
 // Initial data load
 onMounted(() => {

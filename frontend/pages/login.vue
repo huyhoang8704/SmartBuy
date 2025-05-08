@@ -47,11 +47,8 @@
           <!-- Login Button -->
 
           <n-button
-            tag="a"
             type="primary"
             block
-            round
-            color="#ff4d4f"
             class="text-lg font-medium"
             @click="logIn">
             Đăng nhập
