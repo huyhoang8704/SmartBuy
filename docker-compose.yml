@@ -16,11 +16,16 @@ services:
     env_file:
       - ./backend/.env
     depends_on:
-      - mongo
-      - kafka
-      - zookeeper
+      kafka:
+        condition: service_healthy
+      mongo:
+        condition: service_started
+      zookeeper:
+        condition: service_started
+    restart: on-failure
     networks:
       - ecommerce-network
+
 
   backend2:
     container_name: ecommerce-backend2
@@ -37,9 +42,13 @@ services:
     env_file:
       - ./backend/.env
     depends_on:
-      - mongo
-      - kafka
-      - zookeeper
+      kafka:
+        condition: service_healthy
+      mongo:
+        condition: service_started
+      zookeeper:
+        condition: service_started
+    restart: on-failure
     networks:
       - ecommerce-network
   # Model Service
@@ -157,6 +166,7 @@ services:
     depends_on:
       - spark-master
       - kafka
+    restart: on-failure
     networks:
       - ecommerce-network
   
