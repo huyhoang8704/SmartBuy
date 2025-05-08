@@ -68,48 +68,11 @@
         v-else
         class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 px-8 h-fit">
         <template v-for="product in productsData" :key="product._id">
-          <n-card
-            class="rounded-lg shadow-sm transition hover:shadow-md hover:scale-[1.01] cursor-pointer p-2"
-            @click="viewProduct(product)">
-            <div
-              class="w-full aspect-square bg-gray-100 rounded-md overflow-hidden mb-2">
-              <img
-                v-if="product.thumbnail_url"
-                :src="product.thumbnail_url"
-                :alt="product.name || 'Product image'"
-                class="w-full h-full object-cover"
-                @error="(e) => handleImageError(e)" />
-              <div
-                v-else
-                class="w-full h-full bg-gray-300 flex items-center justify-center">
-                <span class="text-gray-500 text-xs">Không có ảnh</span>
-              </div>
-            </div>
-
-            <!-- Product Info -->
-            <div class="space-y-1 min-h-[90px] flex flex-col justify-between">
-              <h3
-                class="text-sm font-semibold text-gray-800 truncate min-h-[1.25rem] text-start">
-                {{ product.name || "Unnamed Product" }}
-              </h3>
-
-              <p class="text-gray-600 text-xs mt-0.5 truncate min-h-[1.75rem]">
-                {{ product.description || "No description available." }}
-              </p>
-
-              <n-rate
-                :value="product.rating || 0"
-                readonly
-                size="small"
-                class="text-yellow-400" />
-
-              <div class="flex justify-between items-center mt-1">
-                <span class="text-red-500 font-semibold text-xs">
-                  {{ product.price ? formatPrice(product.price) : "N/A" }}
-                </span>
-              </div>
-            </div>
-          </n-card>
+          <ProductCard
+            v-for="product in productsData"
+            :key="product._id"
+            :product="product"
+            @click="viewProduct" />
         </template>
       </div>
 
@@ -142,6 +105,7 @@ import { useProducts } from "~/composables/api/useProducts";
 import { useTrackBehavior } from "~/composables/api/useTrackBehavior";
 import { useFormatPrice } from "~/composables/utils/useFormatters";
 import CategoryMenu from "~/components/CategoryMenu.vue";
+import ProductCard from "~/components/ProductCard.vue";
 
 // State variables
 const productsData = ref([]);
@@ -264,13 +228,4 @@ function viewProduct(product) {
 }
 </script>
 
-<style scoped>
-/* Enhance product card hover effects */
-:deep(.n-card:hover) {
-  transform: scale(1.05);
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-:deep(.button:hover) {
-}
-</style>
+<style scoped></style>
