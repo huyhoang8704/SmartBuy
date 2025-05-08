@@ -18,13 +18,12 @@
               <n-input
                 v-model:value="searchQuery"
                 placeholder="Tìm kiếm..."
-                round
                 size="medium"
                 @keyup.enter="navigateToSearch" />
-              <n-button type="primary" round @click="navigateToSearch">
+              <n-button round type="primary" @click="navigateToSearch">
                 <Icon
                   name="material-symbols:search-rounded"
-                  style="color: black" />
+                  style="color: white" />
               </n-button>
             </n-input-group>
           </div>
@@ -32,16 +31,10 @@
           <div class="flex items-center space-x-5 flex-row">
             <CartButton v-if="authStore.isAuthenticated" />
             <div>
-              <n-button
-                v-if="authStore.isAuthenticated"
-                round
-                color="#ff4d4f"
-                @click="logOut">
+              <n-button v-if="authStore.isAuthenticated" @click="logOut">
                 Đăng xuất
               </n-button>
-              <n-button v-else round color="#ff4d4f" @click="logIn">
-                Đăng nhập
-              </n-button>
+              <n-button v-else @click="logIn"> Đăng nhập </n-button>
             </div>
             <!-- Mobile menu toggle -->
             <!-- <n-button circle class="md:hidden">

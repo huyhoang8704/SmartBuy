@@ -153,6 +153,8 @@ const currentPage = ref(1);
 const pageSize = ref(16);
 const cart = useCartStore();
 const { formatPrice } = useFormatPrice();
+const authStore = useAuthStore(); // Access the auth store
+const isAuthenticated = computed(() => authStore.isAuthenticated); // Make it reactive
 
 const productGridLoading = ref(false);
 
@@ -206,33 +208,32 @@ const fetchProducts = async () => {
   productGridLoading.value = false;
 };
 
-// Watch for changes that require data refetching
+// Watch for product-related changes
 watch(
   [currentPage, pageSize, selectedSort, searchQuery, selectedCategory],
   async (
     [newPage, newLimit, newSort, newSearch, newCategory],
     [oldPage, oldLimit, oldSort, oldSearch, oldCategory]
   ) => {
-    // Only trigger if search is empty or long enough
     if (
-      typeof newSearch === "string" &&
-      (newSearch.length > 2 || newSearch === "")
+      newPage !== oldPage ||
+      newLimit !== oldLimit ||
+      newSort !== oldSort ||
+      newSearch !== oldSearch ||
+      newCategory !== oldCategory
     ) {
-      if (
-        newLimit !== oldLimit ||
-        newSearch !== oldSearch ||
-        newSort !== oldSort ||
-        newCategory !== oldCategory
-      ) {
-        currentPage.value = 1; // Reset page if any of those change
-      }
       await fetchProducts();
-      scrollToTop();
     }
-  },
-  { immediate: true }
+  }
 );
 
+// Separate watch for authentication state
+watch(isAuthenticated, async (newAuth, oldAuth) => {
+  if (newAuth !== oldAuth) {
+    console.log("Authentication state changed:", newAuth);
+    await fetchProducts();
+  }
+});
 // Initial data load
 onMounted(() => {
   selectedCategory.value = ""; // Default to "all" category

@@ -1,12 +1,28 @@
 <template>
-  <n-notification-provider>
-    <NuxtLayout>
-      <NuxtPage />
-    </NuxtLayout>
-  </n-notification-provider>
+  <n-config-provider :theme-overrides="themeOverrides">
+    <n-notification-provider>
+      <NuxtLayout>
+        <NuxtPage />
+      </NuxtLayout>
+    </n-notification-provider>
+  </n-config-provider>
 </template>
 
 <script setup>
+import { NConfigProvider, NNotificationProvider } from "naive-ui";
+
+const themeOverrides = {
+  common: {
+    primaryColor: "#000000",
+    primaryColorHover: "#444444",
+  },
+  Button: {
+    colorHover: "#444444", // Background color on hover
+    textColorHover: "#ffffff", // Text color on hover
+    borderHover: "1px solid #666666", // Border color on hover
+  },
+};
+
 useHead({
   link: [
     { rel: "preconnect", href: "https://fonts.googleapis.com" },
@@ -18,3 +34,4 @@ useHead({
   ],
 });
 </script>
+<style scoped></style>

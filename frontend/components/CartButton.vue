@@ -3,10 +3,11 @@
     <NuxtLink to="/cart">
       <n-button
         type="primary"
-        round
         @mouseenter="showDropdown = true"
         @mouseleave="handleMouseLeave">
-        🛒 Giỏ hàng
+        <Icon
+          name="material-symbols-light:shopping-bag-outline"
+          style="color: white" />
         <span
           v-if="cart.totalItems > 0"
           class="absolute -top-4 -right-4 bg-red-600 text-white text-xs rounded-full px-1.5">
