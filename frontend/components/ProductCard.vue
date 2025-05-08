@@ -1,7 +1,7 @@
 <template>
-  <card
+  <div
     @click="onClick"
-    class="bg-white text-black hover:text-white hover:cursor-pointer hover:bg-black text-center border border-gray-200 shadow-sm hover:shadow-md transition-all duration-300 w-64">
+    class="card bg-white text-black hover:text-white hover:cursor-pointer hover:bg-black text-center border border-gray-200 shadow-sm hover:shadow-md transition-all duration-300 w-64">
     <div class="flex justify-center relative">
       <div class="w-full aspect-square p-4 flex items-center justify-center">
         <img
@@ -28,7 +28,7 @@
         VIEW PRODUCT
       </button> -->
     </div>
-  </card>
+  </div>
 </template>
 
 <script setup>
@@ -36,10 +36,6 @@ const props = defineProps({
   product: {
     type: Object,
     required: true,
-  },
-  color: {
-    type: String,
-    default: "green", // green, orange, yellow
   },
 });
 
@@ -56,27 +52,12 @@ const handleImageError = (e) => {
 };
 
 const onClick = () => {
-  emit("click", product);
+  emit("click", props.product);
 };
-
-// Tailwind color mappings
-const colorMap = {
-  green: {
-    dot: "bg-teal-500",
-    button: "bg-teal-500 hover:bg-teal-600",
-    price: "text-teal-600",
-  },
-  orange: {
-    dot: "bg-orange-500",
-    button: "bg-orange-500 hover:bg-orange-600",
-    price: "text-orange-600",
-  },
-  yellow: {
-    dot: "bg-yellow-500",
-    button: "bg-yellow-500 hover:bg-yellow-600",
-    price: "text-yellow-600",
-  },
-};
-
-const priceColor = colorMap[props.color]?.price || "text-gray-800";
 </script>
+<style scoped>
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+</style>
