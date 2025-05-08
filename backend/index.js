@@ -23,7 +23,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cookieParser()); 
 
 // start consumer kafka
-startConsumerMongo();
+// startConsumerMongo();
 // startConsumerAnalyst(); 
 
 userRoute(app);

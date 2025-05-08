@@ -181,6 +181,16 @@ services:
       - kafka
     networks:
       - ecommerce-network
+  
+  dashboard:
+    build:
+      context: ./dashboard
+    ports:
+      - "8501:8501"
+    depends_on:
+      - mongo
+    networks:
+      - ecommerce-network
 
 
 volumes:
