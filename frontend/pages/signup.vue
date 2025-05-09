@@ -6,7 +6,7 @@
       <n-card class="rounded-2xl shadow-lg w-full max-w-md">
         <div class="text-center mb-6">
           <h2 class="text-2xl font-bold text-gray-800">Tạo Tài Khoản</h2>
-          <p class="text-gray-600 mt-2">Đăng ký tài khoản NeoBuy mới</p>
+          <p class="text-gray-600 mt-2">Đăng ký tài khoản FastBuy mới</p>
         </div>
 
         <!-- Loading Spinner Wrap -->

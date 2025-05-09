@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen bg-gray-50 flex flex-col">
+  <div class="min-h-screen bg-gray-50 flex flex-col be-vietnam-pro">
     <!-- Header - Full width with minimal outer padding -->
 
     <!-- Main Content Area - Full width with minimal padding -->
@@ -9,7 +9,7 @@
         <div class="text-center mb-6">
           <h2 class="text-2xl font-bold text-gray-800">Chào mừng trở lại</h2>
           <p class="text-gray-600 mt-2">
-            Đăng nhập vào tài khoản NeoBuy của bạn
+            Đăng nhập vào tài khoản FastBuy của bạn
           </p>
         </div>
 
@@ -20,7 +20,6 @@
               v-model:value="email"
               type="email"
               placeholder="Nhập email của bạn"
-              round
               class="login-input"
               @keyup.enter="logIn" />
           </n-form-item>
@@ -64,7 +63,7 @@
           <!-- Sign Up Link -->
           <div class="text-center text-gray-600">
             Bạn chưa có tài khoản?
-            <NuxtLink to="/signup" class="underline hover:text-orange-600">
+            <NuxtLink to="/signup" class="underline hover:text-black">
               Đăng ký
             </NuxtLink>
           </div>
@@ -141,10 +140,6 @@ const logIn = async () => {
 :deep(.n-button:hover) {
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-}
-
-:deep(.n-input) {
-  border-radius: 1rem;
 }
 
 social-btn:hover {

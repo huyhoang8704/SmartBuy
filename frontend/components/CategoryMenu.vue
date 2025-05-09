@@ -6,7 +6,7 @@
     <n-menu
       :options="menuItems"
       :value="selectedCategory"
-      class="bubbly-menu"
+      class="bubbly-menu be-vietnam-pro"
       @update:value="$emit('update:selectedCategory', $event)" />
   </n-card>
 </template>
@@ -46,19 +46,4 @@ onMounted(async () => {
 });
 </script>
 
-<style scoped>
-:deep(.bubbly-menu .n-menu-item) {
-  margin: 4px 0;
-  border-radius: 8px;
-  transition: all 0.2s ease;
-}
-
-:deep(.bubbly-menu .n-menu-item:hover) {
-  background-color: rgba(0, 0, 0, 0.05);
-}
-
-:deep(.bubbly-menu .n-menu-item-content--selected) {
-  border-radius: 8px;
-  font-weight: 600;
-}
-</style>
+<style scoped></style>
