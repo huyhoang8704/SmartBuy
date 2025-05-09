@@ -1,32 +1,26 @@
 <template>
   <div
-    @click="onClick"
-    class="card bg-white text-black hover:text-white hover:cursor-pointer hover:bg-black text-center border border-gray-200 shadow-sm hover:shadow-md transition-all duration-300 w-64">
-    <div class="flex justify-center relative">
-      <div class="w-full aspect-square p-4 flex items-center justify-center">
-        <img
-          :src="product.thumbnail_url"
-          :alt="product.name"
-          class="max-h-full object-contain"
-          @error="handleImageError" />
-      </div>
+    class="product-card p-2 mx-1 bg-white shadow-sm hover:shadow-md transition-all duration-300 cursor-pointer"
+    @click="onClick">
+    <!-- Product Image -->
+    <div class="relative w-full aspect-square bg-gray-100 overflow-hidden">
+      <img
+        :src="product.thumbnail_url"
+        :alt="product.name || 'Product image'"
+        class="w-full h-full object-cover"
+        @error="handleImageError" />
     </div>
 
-    <!-- Product Content -->
-    <div class="px-4 pb-6">
-      <h3 class="uppercase text-sm font-semibold tracking-wide line-clamp-1">
-        {{ product.name || "Unnamed Product" }}
-      </h3>
-
-      <p class="text-lg font-semibold">
+    <!-- Product Details -->
+    <div class="p-4">
+      <!-- Product Name -->
+      <div class="text-lg font-bold font-noto text-gray-800 line-clamp-2">
+        {{ product.name }}
+      </div>
+      <!-- Product Price -->
+      <div class="be-vietnam-pro text-gray-900 mt-2">
         {{ formatPrice(product.price) }}
-      </p>
-
-      <!-- <button
-        class="w-full mt-4 py-2 text-sm font-semibold text-white bg-black hover:bg-white hover:text-black transition duration-100"
-        @click="onClick">
-        VIEW PRODUCT
-      </button> -->
+      </div>
     </div>
   </div>
 </template>
@@ -56,8 +50,15 @@ const onClick = () => {
 };
 </script>
 <style scoped>
-.card:hover {
+.product-card {
+  border: 1px solid rgba(229, 231, 235, 0.7);
+  transition: all 0.3s ease;
+}
+
+.product-card:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1),
+    0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  border-color: rgba(229, 231, 235, 0.1);
 }
 </style>

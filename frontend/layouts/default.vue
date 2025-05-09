@@ -1,15 +1,15 @@
 <template>
-  <div class="min-h-screen bg-gray-50 flex flex-col">
+  <div class="min-h-screen bg-gray-50 flex flex-col be-vietnam-pro">
     <!-- Header - Full width with minimal outer padding -->
     <header
-      class="sticky top-0 z-10 w-full p-4 bg-white shadow-lg items-center">
+      class="sticky top-0 z-10 w-full p-4 bg-white shadow-lg items-center border-b-1">
       <div class="w-full bg-white rounded-2xl p-4">
         <div class="flex items-center justify-between">
           <!-- Logo with bubbly effect -->
           <div class="text-2xl font-bold">
             <n-button text class="text-red-500 text-2xl font-bold rounded-full">
               <span class="flex items-center">
-                <NuxtLink class="font-nunito text-4xl" to="/">NeoBuy</NuxtLink>
+                <NuxtLink class="font-nunito text-4xl" to="/">FastBuy</NuxtLink>
               </span>
             </n-button>
           </div>
@@ -20,7 +20,7 @@
                 placeholder="Tìm kiếm..."
                 size="medium"
                 @keyup.enter="navigateToSearch" />
-              <n-button round type="primary" @click="navigateToSearch">
+              <n-button type="primary" @click="navigateToSearch">
                 <Icon
                   name="material-symbols:search-rounded"
                   style="color: white" />
@@ -116,7 +116,14 @@ const navigateToSearch = async () => {
       .then((success) => console.log("Tracked:", success))
       .catch((err) => console.warn("Tracking failed:", err));
 
-    navigateTo(`/search/${searchQuery.value.trim()}`);
+    // Navigate to index page with search query parameter instead of separate search page
+    navigateTo({
+      path: "/",
+      query: {
+        search: searchQuery.value.trim(),
+      },
+    });
+    searchQuery.value = "";
   }
 };
 
@@ -158,9 +165,5 @@ const logIn = () => {
 
 :deep(.bubbly-menu .n-menu-item:hover) {
   transform: scale(1.02);
-}
-
-:deep(.n-input) {
-  border-radius: 1rem;
 }
 </style>
