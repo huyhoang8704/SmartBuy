@@ -12,6 +12,7 @@ db = client["ecommerce"]
 
 # Load events từ Mongo
 events = pd.DataFrame(list(db["user_behaviors"].find({}, {"_id": 0})))
+events["userId"] = events["userId"].astype(str)
 events["productId"] = events["productId"].astype(str)
 
 # Load products từ Mongo
