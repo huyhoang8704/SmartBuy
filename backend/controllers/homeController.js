@@ -138,10 +138,9 @@ const recommendation = async (req, res) => {
 };
 
 const getProductList = async (req, res) => {
-    const userId = req.user?.userId || null; // Get userId from JWT token
+    const userId = req.user?.userId || null;
     console.log("userId", userId);
 
-    let useRecommendation = false;
     let recommendationIds = [];
 
     if (userId) {
@@ -150,7 +149,6 @@ const getProductList = async (req, res) => {
             const { recommendations } = response.data;
 
             if (Array.isArray(recommendations) && recommendations.length > 0) {
-                useRecommendation = true;
                 recommendationIds = recommendations.map(id => new mongoose.Types.ObjectId(id));
             }
         } catch (error) {
@@ -158,36 +156,20 @@ const getProductList = async (req, res) => {
         }
     }
 
-    // Build query
-    let query = {
-        deleted: false,
-    };
+    // Base match query
+    const matchQuery = { deleted: false };
 
-    // Use recommendation filter if applicable
-    if (useRecommendation) {
-        query._id = { $in: recommendationIds };
-    }
-
-    // Filter by category
     if (req.query.category) {
-        query.slugCategory = req.query.category;
+        matchQuery.slugCategory = req.query.category;
     }
 
-    // Search
     if (req.query.search) {
         const regex = searchHelper(req.query.search);
-        query.$or = [
+        matchQuery.$or = [
             { name: regex },
             { description: regex },
             { category: regex },
         ];
-    }
-
-    // Sort
-    let sort = { createdAt: -1 };
-    if (req.query.sortKey && req.query.sortValue) {
-        sort = {};
-        sort[req.query.sortKey] = req.query.sortValue === "asc" ? 1 : -1;
     }
 
     // Pagination
@@ -195,14 +177,41 @@ const getProductList = async (req, res) => {
     const page = parseInt(req.query.page) || 1;
     const skip = (page - 1) * limit;
 
-    try {
-        const totalItems = await Product.countDocuments(query);
-        const totalPages = Math.ceil(totalItems / limit);
+    // Sorting
+    let sortField = req.query.sortKey || "createdAt";
+    let sortOrder = req.query.sortValue === "asc" ? 1 : -1;
 
-        const products = await Product.find(query)
-            .sort(sort)
-            .limit(limit)
-            .skip(skip);
+    try {
+        const pipeline = [
+            { $match: matchQuery },
+            {
+                $addFields: {
+                    isRecommended: {
+                        $cond: [
+                            { $in: ["$_id", recommendationIds] },
+                            true,
+                            false
+                        ]
+                    }
+                }
+            },
+            { $sort: { isRecommended: -1, [sortField]: sortOrder } },
+            { $skip: skip },
+            { $limit: limit }
+        ];
+
+        const countPipeline = [
+            { $match: matchQuery },
+            { $count: "total" }
+        ];
+
+        const [products, countResult] = await Promise.all([
+            Product.aggregate(pipeline),
+            Product.aggregate(countPipeline)
+        ]);
+
+        const totalItems = countResult[0]?.total || 0;
+        const totalPages = Math.ceil(totalItems / limit);
 
         return res.status(200).json({
             success: true,
