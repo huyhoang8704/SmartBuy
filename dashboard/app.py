@@ -151,25 +151,28 @@ growth_df = (
     .size()
     .reset_index(name="count")
 )
-growth_df["product_short"] = growth_df["name"].apply(
-    lambda x: x[:40] + "..." if len(x) > 40 else x
-)
-growth_df["legend"] = growth_df["product_short"] + " - " + growth_df["action"]
-fig = px.line(
-    growth_df,
-    x="date",
-    y="count",
-    color="product_short",
-    markers=True,
-    line_dash="action",
-    labels={
-        "count": "Số lượt",
-        "date": "Ngày",
-        "legend": "Sản phẩm - Hành vi"
-    },
-)
+if not growth_df.empty:
+    growth_df["product_short"] = growth_df["name"].apply(
+        lambda x: x[:40] + "..." if len(x) > 40 else x
+    )
+    growth_df["legend"] = growth_df["product_short"] + " - " + growth_df["action"]
+    fig = px.line(
+        growth_df,
+        x="date",
+        y="count",
+        color="product_short",
+        markers=True,
+        line_dash="action",
+        labels={
+            "count": "Số lượt",
+            "date": "Ngày",
+            "legend": "Sản phẩm - Hành vi"
+        },
+    )
 
-st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig, use_container_width=True)
+else:
+    st.info("Không có dữ liệu cho lựa chọn này.")
 
 
 # Tỉ lệ chuyển đổi theo danh mục
@@ -179,22 +182,149 @@ conversion_df = (
     df[df["action"].isin(["view", "transaction"])]
     .groupby(["category", "action"])
     .size()
-    .unstack()
-    .fillna(0)
+    .unstack(fill_value=0)  # Tránh NaN
 )
-conversion_df["conversion_rate"] = conversion_df["transaction"] / conversion_df["view"]
-st.dataframe(conversion_df[["view", "transaction", "conversion_rate"]].sort_values("conversion_rate", ascending=False))
+
+# Đảm bảo cột 'view' và 'transaction' luôn tồn tại
+if "view" not in conversion_df.columns:
+    conversion_df["view"] = 0
+if "transaction" not in conversion_df.columns:
+    conversion_df["transaction"] = 0
+
+conversion_df["conversion_rate"] = conversion_df["transaction"] / conversion_df["view"].replace(0, 1)  # Tránh chia 0
+if not conversion_df.empty:
+    conversion_df = conversion_df.reset_index()
+    conversion_df["category"] = conversion_df["category"].apply(
+        lambda x: x[:50] + "..." if len(x) > 50 else x
+    )
+    fig_conversion = px.bar(
+        conversion_df,
+        x="category",
+        y="conversion_rate",
+        labels={"category": "Danh mục", "conversion_rate": "Tỉ lệ chuyển đổi"},
+        title="Tỉ lệ chuyển đổi theo danh mục"
+    )
+    fig_conversion.update_layout(yaxis_tickformat=".0%")  # Định dạng tỉ lệ phần trăm
+    st.plotly_chart(fig_conversion, use_container_width=True)
+else:
+    st.info("Không có dữ liệu cho lựa chọn này.")
+
 
 # Top người dùng hoạt động tích cực nhất
 st.subheader("Người dùng hoạt động tích cực nhất")
 top_users = df["userId"].value_counts().head(10)
-st.bar_chart(top_users)
+
+if not top_users.empty:
+    top_users_df = pd.DataFrame(top_users).reset_index()
+    top_users_df.columns = ["userId", "Số lần tương tác"]
+    top_users_df["userId"] = top_users_df["userId"].apply(
+        lambda x: x[:50] + "..." if len(x) > 50 else x
+    )
+    fig_top_users = px.bar(
+        top_users_df,
+        x="Số lần tương tác",
+        y="userId",
+        orientation="h",
+        labels={"userId": "ID người dùng"}
+    )
+    fig_top_users.update_layout(yaxis=dict(autorange="reversed"))  # Hiển thị người dùng top ở trên cùng
+    st.plotly_chart(fig_top_users, use_container_width=True)
+else:
+    st.info("Không có dữ liệu cho lựa chọn này.")
 
 # Thời gian truy cập theo giờ
 st.subheader("Thời gian truy cập theo giờ")
 df["hour"] = df["timestamp"].dt.hour
 hourly = df.groupby("hour").size()
-st.line_chart(hourly)
+if not hourly.empty:
+    fig_hourly = px.bar(
+        hourly,
+        x=hourly.index,
+        y=hourly.values,
+        labels={"x": "Giờ trong ngày", "y": "Số lượng"},
+        title="Thời gian truy cập theo giờ"
+    )
+    fig_hourly.update_layout(xaxis_title="Giờ trong ngày", yaxis_title="Số lượng")
+    st.plotly_chart(fig_hourly, use_container_width=True)
+else:
+    st.info("Không có dữ liệu cho lựa chọn này.")
+
+st.subheader("Heatmap Hành Vi Theo Giờ Trong Tuần")
+
+# Chuẩn bị dữ liệu cho heatmap
+df["weekday"] = df["timestamp"].dt.day_name()  # Lấy tên thứ (Monday, Tuesday,...)
+df["hour"] = df["timestamp"].dt.hour
+
+# Gom nhóm theo weekday và hour
+heatmap_data = (
+    df.groupby(["weekday", "hour"])
+    .size()
+    .reset_index(name="count")
+)
+
+# Sắp xếp weekday đúng thứ tự
+weekday_order = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
+heatmap_data["weekday"] = pd.Categorical(heatmap_data["weekday"], categories=weekday_order, ordered=True)
+heatmap_pivot = heatmap_data.pivot(index="weekday", columns="hour", values="count").fillna(0)
+
+# Vẽ Heatmap bằng Plotly
+if not heatmap_pivot.empty:
+    fig_heatmap = px.imshow(
+        heatmap_pivot,
+        labels=dict(x="Giờ trong ngày", y="Thứ trong tuần", color="Số lượt hành vi"),
+        x=heatmap_pivot.columns,
+        y=heatmap_pivot.index,
+        aspect="auto",
+        color_continuous_scale="Blues"
+    )
+    st.plotly_chart(fig_heatmap, use_container_width=True)
+else:
+    st.info("Không có dữ liệu cho lựa chọn này.")
+
+st.subheader("Sản Phẩm Trending Trong Tuần")
+
+# Chuẩn bị dữ liệu
+df["week"] = df["timestamp"].dt.isocalendar().week
+current_week = today.isocalendar()[1]
+last_week = current_week - 1
+
+# Lấy dữ liệu tuần hiện tại và tuần trước
+week_data = df[df["action"] == "view"].groupby(["name", "week"]).size().reset_index(name="views")
+
+# Tách riêng số liệu 2 tuần
+current_week_views = week_data[week_data["week"] == current_week].set_index("name")["views"]
+last_week_views = week_data[week_data["week"] == last_week].set_index("name")["views"]
+
+# Tính toán mức tăng trưởng (%)
+trending_df = pd.DataFrame({
+    "current_week_views": current_week_views,
+    "last_week_views": last_week_views
+}).fillna(0)
+
+trending_df["growth_rate (%)"] = ((trending_df["current_week_views"] - trending_df["last_week_views"]) / 
+                                   trending_df["last_week_views"].replace(0, 1)) * 100
+
+# Lọc các sản phẩm có tăng trưởng dương và sắp xếp theo tăng trưởng giảm dần
+trending_df = trending_df[trending_df["growth_rate (%)"] > 0]
+top_trending = trending_df.sort_values("growth_rate (%)", ascending=False).head(10).reset_index()
+
+# Hiển thị bảng hoặc biểu đồ
+if not top_trending.empty:
+    st.dataframe(top_trending[["name", "current_week_views", "last_week_views", "growth_rate (%)"]])
+
+    fig_trend = px.bar(
+        top_trending,
+        x="growth_rate (%)",
+        y="name",
+        orientation="h",
+        labels={"name": "Tên sản phẩm", "growth_rate (%)": "Tăng trưởng (%)"},
+        title="Top 10 Sản Phẩm Trending"
+    )
+    fig_trend.update_layout(yaxis=dict(autorange="reversed"))
+    st.plotly_chart(fig_trend, use_container_width=True)
+else:
+    st.info("Không có sản phẩm trending trong tuần này.")
+
 
 # Hiệu suất mô hình gợi ý (Train AUC)
 st.subheader("Hiệu suất mô hình gợi ý (Train AUC)")
@@ -202,23 +332,37 @@ st.subheader("Hiệu suất mô hình gợi ý (Train AUC)")
 metrics = pd.DataFrame(list(db["model_metrics"].find({}, {"_id": 0})))
 if not metrics.empty:
     metrics["timestamp"] = pd.to_datetime(metrics["timestamp"])
-    fig_auc = px.line(metrics, x="timestamp", y="train_auc", markers=True,
-                      labels={"train_auc": "AUC", "timestamp": "Thời gian"}, title="AUC theo thời gian")
-    st.plotly_chart(fig_auc, use_container_width=True)
+
+    metrics["date"] = metrics["timestamp"].dt.date
+    metrics_filtered = metrics[(metrics["date"] >= start_date) & (metrics["date"] <= end_date)]
+
+    if not metrics_filtered.empty:
+        fig_auc = px.line(metrics, x="timestamp", y="train_auc", markers=True,
+                        labels={"train_auc": "AUC", "timestamp": "Thời gian"}, title="AUC theo thời gian")
+        st.plotly_chart(fig_auc, use_container_width=True)
+    else:
+        st.info("Không có dữ liệu AUC trong khoảng thời gian đã chọn.")
 else:
     st.info("Chưa có dữ liệu AUC từ mô hình.")
 
 st.subheader("Số lượng người dùng và sản phẩm theo từng lần retrain")
 
 if not metrics.empty:
-    fig_size = px.line(
-        metrics,
-        x="timestamp",
-        y=["n_users", "n_items"],
-        markers=True,
-        labels={"value": "Số lượng", "timestamp": "Thời gian"},
-        title="Biến động số lượng users và items"
-    )
-    st.plotly_chart(fig_size, use_container_width=True)
+    metrics["date"] = metrics["timestamp"].dt.date
+    metrics_filtered = metrics[(metrics["date"] >= start_date) & (metrics["date"] <= end_date)]
+    if not metrics_filtered.empty:
+        fig_size = px.line(
+            metrics_filtered,
+            x="timestamp",
+            y=["n_users", "n_items"],
+            markers=True,
+            labels={"value": "Số lượng", "timestamp": "Thời gian"},
+            title="Biến động số lượng users và items"
+        )
+        st.plotly_chart(fig_size, use_container_width=True)
+    else:
+        st.info("Không có dữ liệu số lượng người dùng và sản phẩm trong khoảng thời gian đã chọn.")
+else:
+    st.info("Chưa có dữ liệu số lượng người dùng và sản phẩm.")
 
 st.download_button("Tải dữ liệu CSV đã lọc", df.to_csv(index=False), file_name="filtered_data.csv")

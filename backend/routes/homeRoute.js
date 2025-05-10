@@ -4,8 +4,7 @@ const router = express.Router()
 const checkUserId = require('../middlewares/checkUserId')
 
 
-// router.get('/',controller.index)
-router.get('/',checkUserId, controller.getProductList)
+router.get('/',checkUserId, controller.getProductsList)
 // Recommendation System
 router.get('/recommendation/:userId',controller.recommendation)
 
