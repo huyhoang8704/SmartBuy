@@ -131,6 +131,8 @@ import ProductCard from "~/components/ProductCard.vue";
 const route = useRoute();
 const router = useRouter();
 
+const { $trackBehavior } = useNuxtApp();
+
 // State variables
 const productsData = ref([]);
 const pageCount = ref(0);
@@ -358,12 +360,14 @@ const handleImageError = (e) => {
 function viewProduct(product) {
   console.log("Clicked!", product);
 
-  useTrackBehavior("view", {
+  // useTrackBehavior("view", {
+  //   selectedItems: [{ productId: product._id, quantity: 1 }],
+  // })
+  //   .then((success) => console.log("Tracked:", success))
+  //   .catch((err) => console.warn("Tracking failed:", err));
+  $trackBehavior("view", {
     selectedItems: [{ productId: product._id, quantity: 1 }],
-  })
-    .then((success) => console.log("Tracked:", success))
-    .catch((err) => console.warn("Tracking failed:", err));
-
+  });
   navigateTo(`/product/${product.slug}`);
 }
 
