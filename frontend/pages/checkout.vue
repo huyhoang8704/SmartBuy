@@ -65,29 +65,29 @@
           <div class="border rounded-md p-4">
             <div class="text-lg font-semibold mb-4">Thông tin khách hàng</div>
             <n-form
-              :model="customerInfo"
+              :model="userInformation"
               :rules="customerRules"
               ref="formRef"
               label-placement="left"
               label-width="120px">
               <n-form-item label="Họ và tên" path="name">
                 <n-input
-                  v-model:value="customerInfo.name"
+                  v-model:value="userInformation.name"
                   placeholder="Nhập họ và tên" />
               </n-form-item>
               <n-form-item label="Số điện thoại" path="phone">
                 <n-input
-                  v-model:value="customerInfo.phone"
+                  v-model:value="userInformation.phone"
                   placeholder="Nhập số điện thoại" />
               </n-form-item>
               <n-form-item label="Địa chỉ" path="address">
                 <n-input
-                  v-model:value="customerInfo.address"
+                  v-model:value="userInformation.address"
                   placeholder="Nhập địa chỉ giao hàng" />
               </n-form-item>
               <n-form-item label="Ghi chú" path="note">
                 <n-input
-                  v-model:value="customerInfo.note"
+                  v-model:value="userInformation.note"
                   type="textarea"
                   placeholder="Ghi chú đơn hàng (không bắt buộc)" />
               </n-form-item>
@@ -143,15 +143,35 @@ const formRef = ref(null);
 
 // Token for API calls
 const token = localStorage.getItem("authToken");
+const userId = localStorage.getItem("userId");
 const serverUrl = process.env.SERVER_URL || "http://localhost:4000";
 
 // Customer information
-const customerInfo = ref({
+const userInformation = ref({
   name: "",
   phone: "",
   address: "",
   note: "",
 });
+
+// Fetch user data when component mounts
+try {
+  const userData = await $fetch(`${serverUrl}/user/${userId}`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  // Correctly assign fetched values to the ref
+  userInformation.value = {
+    name: userData.name || "",
+    phone: userData.phone || "",
+    address: userData.address || "",
+    note: userInformation.value.note, // Preserve any existing note
+  };
+} catch (error) {
+  console.error("Failed to fetch user data:", error);
+}
 
 // Form validation rules
 const customerRules = {
@@ -193,7 +213,7 @@ const placeOrder = async () => {
       quantity: item.quantity,
     })),
     paymentMethod: paymentMethod.value,
-    customerInfo: customerInfo.value,
+    userInformation: userInformation.value,
   };
 
   // Track user behavior

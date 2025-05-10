@@ -82,6 +82,9 @@ import { useSingleProduct } from "~/composables/api/useSingleProduct";
 import { useTrackBehavior } from "~/composables/api/useTrackBehavior";
 import { useFormatPrice } from "~/composables/utils/useFormatters";
 import RelatedProducts from "~/components/RelatedProducts.vue";
+import { useNotification } from "naive-ui";
+
+const notification = useNotification();
 
 // Get route params
 const route = useRoute();
