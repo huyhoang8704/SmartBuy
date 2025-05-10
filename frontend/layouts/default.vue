@@ -3,7 +3,7 @@
     <!-- Header - Full width with minimal outer padding -->
     <header
       class="sticky top-0 z-10 w-full p-4 bg-white shadow-lg items-center border-b-1">
-      <div class="w-full bg-white rounded-2xl p-4">
+      <div class="w-full rounded-2xl p-4 bg-white">
         <div class="flex items-center justify-between">
           <!-- Logo with bubbly effect -->
           <div class="text-2xl font-bold">

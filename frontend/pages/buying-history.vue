@@ -42,9 +42,8 @@
             </span>
             <n-button
               @click="toggleExpand(order._id)"
-              round
               size="medium"
-              type="success">
+              type="primary">
               {{
                 expandedOrders.has(order._id) ? "Ẩn chi tiết" : "Xem chi tiết"
               }}
@@ -106,6 +105,20 @@ const expandedOrders = ref(new Set());
 const { formatPrice } = useFormatPrice();
 const token = localStorage.getItem("authToken");
 const serverUrl = process.env.SERVER_URL || "http://localhost:4000";
+const authStore = useAuthStore();
+const isAuthenticated = computed(() => authStore.isAuthenticated); // Make it reactive
+onMounted(() => {
+  if (!isAuthenticated) {
+    navigateTo("/");
+  }
+});
+// Separate watch for authentication state
+watch(isAuthenticated, async (newAuth, oldAuth) => {
+  if (newAuth !== oldAuth) {
+    console.log("Authentication state changed:", newAuth);
+    navigateTo("/");
+  }
+});
 
 const fetchOrders = async () => {
   const data = await $fetch(`${serverUrl}/order/user`, {
