@@ -136,12 +136,14 @@ const submitChanges = () => {
       if (response.status == 200) {
         notification.success({
           content: "Cập nhật thông tin thành công",
+          duration: 3000,
         });
         fetchUserData();
         loading.value = false;
       } else {
         notification.error({
           content: "Cập nhật thông tin thất bại. Vui lòng thử lại",
+          duration: 3000,
         });
         fetchUserData();
       }

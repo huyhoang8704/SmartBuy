@@ -366,8 +366,6 @@ const handleImageError = (e) => {
 };
 
 function viewProduct(product) {
-  console.log("Clicked!", product);
-
   // useTrackBehavior("view", {
   //   selectedItems: [{ productId: product._id, quantity: 1 }],
   // })
