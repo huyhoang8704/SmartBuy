@@ -215,10 +215,6 @@ def recommend(user_id: str, k: int = 10):
     if model is None:
         raise HTTPException(503, "Model not ready")
 
-
-    idx = user_enc.transform([user_id])[0]
-    n_items = item_enc.classes_.shape[0]
-    k = n_items
     if user_id not in user_enc.classes_:
         recs = get_top_viewed_products(limit=k)
         print(f"[recommend] Skipped: unknown user - {user_id}")
@@ -227,6 +223,11 @@ def recommend(user_id: str, k: int = 10):
             "recommendations": recs,
             "note": "fallback: top viewed products"
         }
+    
+    idx = user_enc.transform([user_id])[0]
+    n_items = item_enc.classes_.shape[0]
+    k = min(k, n_items)
+
     user_ids = np.full(n_items, idx, dtype=np.int32)
     item_ids = np.arange(n_items, dtype=np.int32)
     scores   = model.predict(user_ids, item_ids, item_features=item_features)
