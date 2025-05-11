@@ -6,7 +6,11 @@ const Product = require("../models/productModel");
 
 const trackBehaviorUser = async (req, res) => {
   try {
-    const { userId, action, selectedItems = [], keyword = "" } = req.body;
+    const userId = req.body.userId;
+    const action = req.body.action;
+    const selectedItems = req.body.selectedItems || [];
+    const keyword = req.body.keyword || "";
+    console.log("request body from frontend", req.body);
 
     if (!userId || !action) {
       return res.status(400).json({ message: "userId và action là bắt buộc" });
@@ -42,7 +46,7 @@ const trackBehaviorUser = async (req, res) => {
     await Promise.all(
       logsToSend.map(event => produceEvent(kafkaTopic, event))
     );
-
+    console.log("📥 Behavior event received:", logsToSend);
     res.status(201).json({
       message: "Behaviors user tracked successfully",
       totalSent: logsToSend,
@@ -178,3 +182,18 @@ module.exports = {
     aggregateBehaviorStats
 };
 
+
+
+/**
+ecommerce-backend1   | request body from frontend {
+ecommerce-backend1   |   action: 'view',
+ecommerce-backend1   |   userId: '681dba63cbc3814da3d82341',                                                                
+ecommerce-backend1   |   selectedItems: [ { productId: '68036cfe2f7275bc0a53b57c', quantity: 1 } ]                          
+ecommerce-backend1   | }
+
+ecommerce-backend2   | request body from frontend {
+ecommerce-backend2   |   action: 'view',
+ecommerce-backend2   |   userId: '6814ece0c7b8e8e5bb9f1e51',                                                                
+ecommerce-backend2   |   selectedItems: [ { productId: '680280c791caf953de15fb09', quantity: 1 } ]
+ecommerce-backend2   | } 
+ */
