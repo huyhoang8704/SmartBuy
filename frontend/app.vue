@@ -13,8 +13,8 @@ import { NConfigProvider, NNotificationProvider } from "naive-ui";
 
 const themeOverrides = {
   common: {
-    primaryColor: "#000000",
-    primaryColorHover: "#444444",
+    primaryColor: "#00B14F",
+
     primaryColorPressed: "#333333", // Dark gray when pressed/clicked
   },
   Button: {
@@ -58,6 +58,14 @@ useHead({
     {
       rel: "stylesheet",
       href: "https://fonts.googleapis.com/css2?family=Manrope:wght@200..800&display=swap",
+    },
+    {
+      rel: "stylesheet",
+      href: "https://fonts.googleapis.com/css2?family=Tektur:wght@400..900&display=swap",
+    },
+    {
+      rel: "stylesheet",
+      href: "https://fonts.googleapis.com/css2?family=Merriweather:ital,opsz,wght@0,18..144,300..900;1,18..144,300..900&display=swap",
     },
   ],
 });

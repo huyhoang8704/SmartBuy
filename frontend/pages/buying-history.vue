@@ -30,7 +30,7 @@
             </div>
           </div>
           <div class="flex items-center gap-3">
-            <span
+            <!-- <span
               class="text-sm px-3 py-1 rounded-full font-medium"
               :class="{
                 'bg-yellow-100 text-yellow-700': order.status === 'pending',
@@ -39,7 +39,7 @@
                 'bg-blue-100 text-blue-700': order.status === 'processing',
               }">
               {{ order.status }}
-            </span>
+            </span> -->
             <n-button
               @click="toggleExpand(order._id)"
               size="medium"

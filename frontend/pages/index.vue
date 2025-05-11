@@ -1,7 +1,8 @@
 <template>
   <div class="w-full min-h-screen flex flex-col md:flex-row gap-6">
     <!-- Sidebar (Sticky, height fit to content) -->
-    <aside class="w-full md:w-64 flex-shrink-0 sticky top-30 z-5 self-start">
+    <aside
+      class="w-full md:w-64 flex-shrink-0 sticky top-30 z-5 self-start px-1">
       <button
         class="md:hidden bg-gray-200 p-2 rounded mb-2"
         @click="isSidebarOpen = !isSidebarOpen">

@@ -1,12 +1,12 @@
 <template>
   <div class="max-w-5xl mx-auto mt-6">
     <!-- Progress Steps -->
-    <div class="flex justify-center text-lg mb-8">
-      <div class="text-orange-400 font-medium">1.Giỏ hàng</div>
+    <div class="flex justify-center text-lg mb-8 font-merriweather">
+      <div class="text-[#00B14F] font-medium">1. Giỏ hàng</div>
       <div class="mx-2 text-gray-400">></div>
-      <div class="text-gray-400">2.Thanh toán</div>
+      <div class="text-gray-400">2. Thanh toán</div>
       <div class="mx-2 text-gray-400">></div>
-      <div class="text-gray-400">3.Đặt hàng</div>
+      <div class="text-gray-400">3. Đặt hàng</div>
     </div>
 
     <n-card size="large" class="shadow-lg">
@@ -24,6 +24,7 @@
           <!-- Select All -->
           <div class="flex items-center gap-2 mb-2">
             <n-checkbox
+              color="#00B14F"
               v-model:checked="selectAll"
               @update:checked="toggleSelectAll">
               Chọn tất cả ({{ selectedItems.length }}/{{ cart.items.length }})
@@ -46,6 +47,7 @@
             class="grid grid-cols-12 items-center py-4 border-b">
             <div class="col-span-1 flex justify-center">
               <n-checkbox
+                color="#00B14F"
                 :checked="isItemSelected(item.id)"
                 @update:checked="
                   (checked) => toggleSelectItem(item.id, checked)

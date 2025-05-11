@@ -65,7 +65,10 @@
             button-placement="both" />
         </div>
 
-        <n-button type="primary" size="large" @click="handleAddToCart(product)">
+        <n-button
+          color="#00B14F"
+          size="large"
+          @click="handleAddToCart(product)">
           Thêm vào giỏ hàng
         </n-button>
       </div>

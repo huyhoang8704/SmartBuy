@@ -1,12 +1,28 @@
 <template>
-  <n-card class="rounded-2xl shadow-md">
-    <template #header>
-      <div class="text-lg font-bold px-2">Danh mục sản phẩm</div>
+  <n-card
+    class="rounded-2xl shadow-md"
+    :theme-overrides="{
+      Card: {
+        color: '#F0FAF5',
+        borderColor: '#00B14F',
+        titleTextColor: '#00B14F',
+      },
+    }">
+    <template #header class="">
+      <div class="category-card text-lg font-bold px-2 text-[#00B14F]">
+        Danh mục sản phẩm
+      </div>
     </template>
     <n-menu
+      color="#00B14F"
       :options="menuItems"
       :value="selectedCategory"
       class="bubbly-menu be-vietnam-pro"
+      :theme-overrides="{
+        common: {
+          primaryColor: '#00B14F',
+        },
+      }"
       @update:value="$emit('update:selectedCategory', $event)" />
   </n-card>
 </template>
@@ -46,4 +62,21 @@ onMounted(async () => {
 });
 </script>
 
-<style scoped></style>
+<style scoped>
+:deep(.n-card) {
+  background-color: #00b14f; /* Apply the desired background color */
+  border-radius: 2rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.06); /* Soft shadow */
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+:deep(.bubbly-menu .n-menu-item--active) {
+  background-color: #00b14f; /* Highlight active item with green */
+  color: white; /* Ensure text is readable */
+  border-radius: 0.75rem; /* Match the menu item style */
+}
+
+:deep(.bubbly-menu .n-menu-item--active:hover) {
+  background-color: #008f3e; /* Slightly darker green on hover */
+}
+</style>

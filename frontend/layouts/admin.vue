@@ -6,7 +6,7 @@
         <div class="flex items-center justify-between">
           <div class="text-2xl font-bold">
             <n-button text class="text-red-500 text-2xl font-bold rounded-full">
-              <NuxtLink to="/">MyShop</NuxtLink>
+              <NuxtLink to="/">SmartBuy</NuxtLink>
             </n-button>
           </div>
         </div>
@@ -30,7 +30,7 @@
 
     <!-- Footer appears at bottom if content is short -->
     <footer class="w-full p-4 bg-white shadow-inner">
-      <div class="text-center text-gray-400 text-sm">© 2025 MyShop</div>
+      <div class="text-center text-gray-400 text-sm">© 2025 SmartBuy</div>
     </footer>
   </div>
 </template>

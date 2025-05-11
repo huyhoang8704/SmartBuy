@@ -1,9 +1,9 @@
 <template>
   <div
-    class="product-card p-2 mx-1 bg-white shadow-sm hover:shadow-md transition-all duration-300 cursor-pointer"
+    class="product-card p-2 mx-1 shadow-sm hover:shadow-md transition-all duration-300 cursor-pointer"
     @click="onClick">
     <!-- Product Image -->
-    <div class="relative w-full aspect-square bg-gray-100 overflow-hidden">
+    <div class="relative w-full aspect-square overflow-hidden">
       <img
         :src="product.thumbnail_url"
         :alt="product.name || 'Product image'"
@@ -14,7 +14,8 @@
     <!-- Product Details -->
     <div class="p-4">
       <!-- Product Name -->
-      <div class="text-lg font-bold font-noto text-gray-800 line-clamp-2">
+      <div
+        class="text-lg font-bold font-merriweather text-gray-800 line-clamp-2">
         {{ product.name }}
       </div>
       <!-- Product Price -->
@@ -52,8 +53,10 @@ const onClick = () => {
 <style scoped>
 .product-card {
   border: 1px solid rgba(229, 231, 235, 0.7);
+  border-radius: 12px;
   transition: all 0.3s ease;
   position: relative;
+  background-color: whitesmoke;
 }
 
 .product-card::after {
@@ -76,6 +79,6 @@ const onClick = () => {
 }
 
 .product-card:hover::after {
-  width: 100%;
+  width: 95%;
 }
 </style>

@@ -67,9 +67,6 @@
         <div
           class="pt-4 border-t mt-4 font-bold flex items-center justify-between">
           Tổng cộng: {{ formatPrice(cart.totalPrice) }}
-          <NuxtLink to="/cart">
-            <n-button type="primary" block> Xem giỏ hàng </n-button>
-          </NuxtLink>
         </div>
       </div>
     </transition>

@@ -6,7 +6,7 @@
         <div class="text-gray-400">1.Giỏ hàng</div>
       </NuxtLink>
       <div class="mx-2 text-gray-400">></div>
-      <div class="text-orange-400 font-medium">2.Thanh toán</div>
+      <div class="text-[#00B14F] font-medium">2.Thanh toán</div>
       <div class="mx-2 text-gray-400">></div>
       <div class="text-gray-400">3.Đặt hàng</div>
     </div>

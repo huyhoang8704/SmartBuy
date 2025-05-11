@@ -1,17 +1,18 @@
 <template>
-  <div class="min-h-screen bg-gray-50 flex flex-col be-vietnam-pro">
+  <div class="min-h-screen bg-gray-100 flex flex-col be-vietnam-pro">
     <!-- Header - Full width with minimal outer padding -->
     <header
-      class="sticky top-0 z-10 w-full p-4 bg-white shadow-lg items-center border-b-1">
-      <div class="w-full rounded-2xl p-4 bg-white">
+      class="sticky top-0 z-10 mx-4 my-2 p-4 bg-[#D9FCDE] shadow-lg items-center border-b-1 rounded-2xl">
+      <div class="w-full rounded-2xl p-4 bg-[#D9FCDE]">
         <div class="flex items-center justify-between">
           <!-- Logo with bubbly effect -->
           <div class="text-2xl font-bold">
-            <n-button text class="text-red-500 text-2xl font-bold rounded-full">
-              <span class="flex items-center">
-                <NuxtLink class="font-nunito text-4xl" to="/">FastBuy</NuxtLink>
-              </span>
-            </n-button>
+            <span class="flex items-center">
+              <NuxtLink class="font-tektur text-4xl flex flex-row" to="/">
+                <p class="text-[#00B14F]">Smart</p>
+                <p>Buy</p></NuxtLink
+              >
+            </span>
           </div>
           <div class="hidden md:block flex-1 max-w-md mx-6 relative">
             <n-input-group>
@@ -20,7 +21,10 @@
                 placeholder="Tìm kiếm..."
                 size="medium"
                 @keyup.enter="navigateToSearch" />
-              <n-button type="primary" @click="navigateToSearch">
+              <n-button
+                type="primary"
+                color="#00B14F"
+                @click="navigateToSearch">
                 <Icon
                   name="material-symbols:search-rounded"
                   style="color: white" />
@@ -31,10 +35,15 @@
           <div class="flex items-center space-x-5 flex-row">
             <CartButton v-if="authStore.isAuthenticated" />
             <div>
-              <n-button v-if="authStore.isAuthenticated" @click="logOut">
+              <n-button
+                color="#00B14F"
+                v-if="authStore.isAuthenticated"
+                @click="logOut">
                 Đăng xuất
               </n-button>
-              <n-button v-else @click="logIn"> Đăng nhập </n-button>
+              <n-button v-else color="#00B14F" @click="logIn">
+                Đăng nhập
+              </n-button>
             </div>
             <!-- Mobile menu toggle -->
             <!-- <n-button circle class="md:hidden">
@@ -47,18 +56,13 @@
     </header>
     <!-- Main Content Area - Full width with minimal padding -->
     <div class="flex-1 w-full p-4">
-      <div class="flex flex-col md:flex-row gap-6">
-        <!-- Main Content - Bubbly card -->
-        <main class="flex-1">
-          <n-card class="rounded-2xl shadow-md">
-            <slot />
-            <!-- Placeholder content -->
-            <div v-if="!$slots.default" class="text-center py-12 text-gray-400">
-              <NuxtIcon name="shopping-bag" class="h-16 w-16 mx-auto mb-4" />
-              <p class="text-xl">Your products will appear here</p>
-            </div>
-          </n-card>
-        </main>
+      <div class="rounded-2xl shadow-md px-4 py-2">
+        <slot />
+        <!-- Placeholder content -->
+        <div v-if="!$slots.default" class="text-center py-12 text-gray-400">
+          <NuxtIcon name="shopping-bag" class="h-16 w-16 mx-auto mb-4" />
+          <p class="text-xl">Your products will appear here</p>
+        </div>
       </div>
     </div>
     <!-- Footer - Full width with minimal padding -->
@@ -68,31 +72,19 @@
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6 p-6">
           <!-- Shop -->
           <div class="bg-gray-50 p-4 rounded-xl">
-            <h3 class="font-bold text-lg mb-3">MyShop</h3>
+            <h3 class="font-bold text-lg mb-3">SmartBuy</h3>
             <p class="text-gray-600">
               Shop the latest trends with our curated selection of products
             </p>
           </div>
           <!-- Quick Links -->
-          <div class="bg-gray-50 p-4 rounded-xl">
-            <h3 class="font-bold text-lg mb-3">Quick Links</h3>
-            <div class="flex flex-wrap gap-2">
-              <n-button size="small" round ghost>Home</n-button>
-              <n-button size="small" round ghost>Products</n-button>
-              <n-button size="small" round ghost>About</n-button>
-              <n-button size="small" round ghost>Contact</n-button>
-            </div>
-          </div>
+          <div></div>
           <!-- Contact -->
           <div class="bg-gray-50 p-4 rounded-xl">
             <h3 class="font-bold text-lg mb-3">Contact Us</h3>
-            <p class="text-gray-600">hello@myshop.com</p>
+            <p class="text-gray-600">hello@SmartBuy.com</p>
             <p class="text-gray-600">(123) 456-7890</p>
           </div>
-        </div>
-        <!-- Copyright -->
-        <div class="bg-gray-100 py-3 px-6 text-center text-gray-500 text-sm">
-          © 2025 MyShop. All rights reserved.
         </div>
       </div>
     </footer>

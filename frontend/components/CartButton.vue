@@ -3,6 +3,7 @@
     <NuxtLink to="/cart">
       <n-button
         type="primary"
+        color="#00B14F"
         @mouseenter="showDropdown = true"
         @mouseleave="handleMouseLeave">
         <Icon
@@ -10,7 +11,7 @@
           style="color: white" />
         <span
           v-if="cart.totalItems > 0"
-          class="absolute -top-4 -right-4 bg-red-600 text-white text-xs rounded-full px-1.5">
+          class="absolute -top-5 -right-4 bg-red-600 text-white text-xs rounded-full px-1.5">
           {{ cart.totalItems }}
         </span>
       </n-button>
@@ -60,7 +61,7 @@
           Tổng: {{ formatPrice(cart.totalPrice) }}
         </div>
         <NuxtLink to="/cart">
-          <n-button size="small" type="primary" round>Xem giỏ hàng</n-button>
+          <n-button size="small" color="#00B14F">Xem giỏ hàng</n-button>
         </NuxtLink>
       </div>
     </div>
