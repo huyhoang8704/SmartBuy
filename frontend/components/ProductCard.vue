@@ -53,6 +53,19 @@ const onClick = () => {
 .product-card {
   border: 1px solid rgba(229, 231, 235, 0.7);
   transition: all 0.3s ease;
+  position: relative;
+}
+
+.product-card::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  width: 0;
+  height: 1px;
+  background-color: #000000; /* Grab brand color, adjust as needed */
+  transition: width 0.3s ease, left 0.3s ease;
+  transform: translateX(-50%);
 }
 
 .product-card:hover {
@@ -60,5 +73,9 @@ const onClick = () => {
   box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1),
     0 4px 6px -2px rgba(0, 0, 0, 0.05);
   border-color: rgba(229, 231, 235, 0.1);
+}
+
+.product-card:hover::after {
+  width: 100%;
 }
 </style>

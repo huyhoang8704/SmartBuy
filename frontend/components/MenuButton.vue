@@ -4,7 +4,7 @@
     placement="bottom-end"
     trigger="click"
     @select="handleSelect">
-    <n-button quaternary circle class="md:hidden" style="success">
+    <n-button quaternary class="md:hidden" style="success">
       <Icon name="ooui:user-avatar" size="large"> </Icon>
     </n-button>
   </n-dropdown>

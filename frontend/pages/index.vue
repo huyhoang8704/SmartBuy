@@ -55,51 +55,48 @@
           </button>
         </div>
       </div>
-
-      <!-- Loading state -->
-      <div v-if="productGridLoading" class="flex justify-center py-12">
-        <n-spin size="large" />
-      </div>
-
-      <!-- Skeleton Loader -->
-      <div
-        v-if="productGridLoading"
-        class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 h-fit">
-        <template v-for="n in 8" :key="n">
-          <div class="rounded-lg shadow-sm p-2 animate-pulse">
-            <div class="w-full aspect-square bg-gray-200 rounded-md mb-2"></div>
-            <div class="space-y-2">
-              <div class="h-4 bg-gray-200 rounded"></div>
-              <div class="h-3 bg-gray-200 rounded w-3/4"></div>
+      <!-- Product Grid Container - Always rendered to prevent layout shifts -->
+      <div class="grid-container">
+        <!-- Skeleton Loader -->
+        <div
+          v-if="productGridLoading"
+          class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 px-8 h-fit">
+          <template v-for="n in pageSize" :key="n">
+            <div class="rounded-lg shadow-sm p-2 animate-pulse">
+              <div
+                class="w-full aspect-square bg-gray-200 rounded-md mb-2"></div>
+              <div class="space-y-2 p-4">
+                <div class="h-5 bg-gray-200 rounded"></div>
+                <div class="h-4 bg-gray-200 rounded w-3/4 mt-2"></div>
+              </div>
             </div>
-          </div>
-        </template>
-      </div>
+          </template>
+        </div>
 
-      <!-- No Products Found -->
-      <div
-        v-if="!productGridLoading && productsData.length === 0"
-        class="text-center py-12">
-        <p class="text-gray-500">
-          Không tìm thấy sản phẩm nào phù hợp với bộ lọc của bạn.
-        </p>
-      </div>
+        <!-- No Products Found -->
+        <div
+          v-else-if="!productGridLoading && productsData.length === 0"
+          class="text-center py-12">
+          <p class="text-gray-500">
+            Không tìm thấy sản phẩm nào phù hợp với bộ lọc của bạn.
+          </p>
+        </div>
 
-      <!-- Product Grid -->
-      <div
-        v-else
-        class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 px-8 h-fit">
-        <ProductCard
-          v-for="product in productsData"
-          :key="product._id"
-          :product="product"
-          @click="viewProduct(product)" />
+        <!-- Product Grid -->
+        <div
+          v-else
+          class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 px-8 h-fit">
+          <ProductCard
+            v-for="product in productsData"
+            :key="product._id"
+            :product="product"
+            @click="viewProduct(product)" />
+        </div>
       </div>
-
       <!-- Pagination -->
       <div
-        v-if="productsData.length && productsData.length > 0"
-        class="flex justify-center">
+        v-if="!productGridLoading && productsData.length > 0"
+        class="flex justify-center mt-6">
         <n-pagination
           v-model:page="currentPage"
           :page-count="pageCount"
@@ -130,6 +127,8 @@ import ProductCard from "~/components/ProductCard.vue";
 // Initialize route and router
 const route = useRoute();
 const router = useRouter();
+
+const { $trackBehavior } = useNuxtApp();
 
 // State variables
 const productsData = ref([]);
@@ -250,21 +249,30 @@ const updateQueryParams = () => {
 const fetchProducts = async () => {
   productGridLoading.value = true;
 
-  const data = await useProducts({
-    page: currentPage.value,
-    limit: pageSize.value,
-    sortKey: sortParams.value?.sortKey ?? null,
-    sortValue: sortParams.value?.sortValue ?? null,
-    category: selectedCategory.value === "all" ? null : selectedCategory.value,
-    search: searchQuery.value,
-  });
+  try {
+    const data = await useProducts({
+      page: currentPage.value,
+      limit: pageSize.value,
+      sortKey: sortParams.value?.sortKey ?? null,
+      sortValue: sortParams.value?.sortValue ?? null,
+      category:
+        selectedCategory.value === "all" ? null : selectedCategory.value,
+      search: searchQuery.value,
+    });
 
-  productsData.value = data.products;
-  pageCount.value = data.totalPages ?? 1;
-  productGridLoading.value = false;
+    productsData.value = data.products;
+    pageCount.value = data.totalPages ?? 1;
 
-  // Update URL query parameters
-  updateQueryParams();
+    // Update URL query parameters
+    updateQueryParams();
+  } catch (error) {
+    console.error("Error fetching products:", error);
+  } finally {
+    // Small delay before removing loading state to prevent flickering
+    setTimeout(() => {
+      productGridLoading.value = false;
+    }, 100);
+  }
 };
 
 // Watch for filter or sort changes to reset pagination to page 1
@@ -291,6 +299,7 @@ watch(
       newSearch !== oldSearch
     ) {
       await fetchProducts();
+      scrollToTop();
     }
   }
 );
@@ -300,6 +309,7 @@ watch(isAuthenticated, async (newAuth, oldAuth) => {
   if (newAuth !== oldAuth) {
     console.log("Authentication state changed:", newAuth);
     await fetchProducts();
+    scrollToTop();
   }
 });
 
@@ -358,21 +368,38 @@ const handleImageError = (e) => {
 function viewProduct(product) {
   console.log("Clicked!", product);
 
-  useTrackBehavior("view", {
+  // useTrackBehavior("view", {
+  //   selectedItems: [{ productId: product._id, quantity: 1 }],
+  // })
+  //   .then((success) => console.log("Tracked:", success))
+  //   .catch((err) => console.warn("Tracking failed:", err));
+  $trackBehavior("view", {
     selectedItems: [{ productId: product._id, quantity: 1 }],
-  })
-    .then((success) => console.log("Tracked:", success))
-    .catch((err) => console.warn("Tracking failed:", err));
-
+  });
   navigateTo(`/product/${product.slug}`);
 }
 
-// Clear search query
+// Clear search query and all filters
 function clearSearch() {
+  // Reset all filters and search
   searchQuery.value = "";
+  selectedSort.value = "";
+  selectedCategory.value = "all";
+  currentPage.value = 1;
+
+  // Update URL and refetch products
   updateQueryParams();
   fetchProducts();
 }
 </script>
 
-<style scoped></style>
+<style scoped>
+.grid-container {
+  min-height: 400px; /* Ensures consistent minimum height */
+}
+
+/* Smoother transitions between states */
+.grid-container > div {
+  transition: opacity 0.2s ease-in-out;
+}
+</style>

@@ -1,6 +1,6 @@
 <template>
   <n-config-provider :theme-overrides="themeOverrides">
-    <n-notification-provider>
+    <n-notification-provider placement="bottom-right">
       <NuxtLayout>
         <NuxtPage />
       </NuxtLayout>
@@ -15,15 +15,27 @@ const themeOverrides = {
   common: {
     primaryColor: "#000000",
     primaryColorHover: "#444444",
+    primaryColorPressed: "#333333", // Dark gray when pressed/clicked
   },
   Button: {
     colorHover: "#444444", // Background color on hover
     textColorHover: "#ffffff", // Text color on hover
     borderHover: "1px solid #666666", // Border color on hover
+    colorPressed: "#333333", // Dark gray background when pressed
+    textColorPressed: "#ffffff", // Text color when pressed
+    borderPressed: "1px solid #333333", // Border color when pressed
   },
 };
 
 useHead({
+  title: "FastBuy - Online Shopping",
+  titleTemplate: "%s | FastBuy",
+  meta: [
+    {
+      name: "description",
+      content: "FastBuy - Your One-Stop Online Shopping Destination",
+    },
+  ],
   link: [
     { rel: "preconnect", href: "https://fonts.googleapis.com" },
     { rel: "preconnect", href: "https://fonts.gstatic.com", crossorigin: "" },
@@ -50,4 +62,4 @@ useHead({
   ],
 });
 </script>
-<style scoped></style>
+<style></style>
