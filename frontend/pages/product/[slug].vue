@@ -122,6 +122,7 @@ async function handleAddToCart(product) {
   if (success) {
     notification.success({
       content: "Thêm vào giỏ hàng thành công",
+      duration: 3000,
     });
   }
 }

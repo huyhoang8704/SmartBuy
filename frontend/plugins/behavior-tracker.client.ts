@@ -23,7 +23,7 @@ export default defineNuxtPlugin((nuxtApp) => {
 
     if (VALID_ACTIONS.includes(action as ValidAction)) {
       try {
-        await $fetch(
+        const response = await $fetch(
           `${process.env.SERVER_URL || "http://localhost:4000"}/behavior/track`,
           {
             method: "POST",
@@ -33,9 +33,8 @@ export default defineNuxtPlugin((nuxtApp) => {
             body: fullPayload,
           }
         );
-        console.log("✅ Behavior sent:", action, fullPayload);
       } catch (error) {
-        console.error("❌ Error sending behavior:", error);
+        console.error("[$trackBehavior] Error sending behavior:", error);
       }
     } else {
       behaviorQueue.push({ action, payload: fullPayload });

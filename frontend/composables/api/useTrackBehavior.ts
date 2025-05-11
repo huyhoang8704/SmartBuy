@@ -5,6 +5,7 @@ export const useTrackBehavior = async (
   payload: Record<string, any>
 ): Promise<boolean> => {
   let success = false;
+
   const response = await $fetch(`${serverUrl}/behavior/track`, {
     method: "POST",
     headers: {
@@ -16,7 +17,6 @@ export const useTrackBehavior = async (
       ...payload,
     },
     onResponse({ response }) {
-      console.log(response);
       if (response.status !== 201) {
         success = false;
       } else {
