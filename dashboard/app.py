@@ -4,10 +4,16 @@ from pymongo import MongoClient
 import matplotlib.pyplot as plt
 import plotly.express as px
 from datetime import timedelta, date
+from dotenv import load_dotenv
+import os
 
 
 # Kết nối MongoDB
-client = MongoClient("mongodb+srv://huyhoang8704:huyhoang8704@cluster0.zpf0zj3.mongodb.net/ecommerce?retryWrites=true&w=majority&appName=Cluster0")
+load_dotenv(dotenv_path="/app/backend/.env")
+MONGO_URL = os.getenv("MONGO_URL")
+
+
+client = MongoClient(MONGO_URL)
 db = client["ecommerce"]
 
 # Load events từ Mongo

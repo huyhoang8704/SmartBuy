@@ -13,15 +13,12 @@ from scipy.sparse import coo_matrix, hstack
 from lightfm import LightFM
 from lightfm.evaluation import auc_score
 from pydantic import BaseModel
+from dotenv import load_dotenv
 
+load_dotenv(dotenv_path="/app/backend/.env")
 
 # CONFIG
-MONGO_URI          = os.getenv(
-    "MONGO_URI",
-    "mongodb+srv://huyhoang8704:huyhoang8704"
-    "@cluster0.zpf0zj3.mongodb.net/ecommerce"
-    "?retryWrites=true&w=majority&appName=Cluster0"
-)
+MONGO_URL          = os.getenv("MONGO_URL")
 MONGO_DB           = os.getenv("MONGO_DB", "ecommerce")
 EVENT_COLLECTION   = os.getenv("EVENT_COLLECTION", "user_behaviors")
 PRODUCT_COLLECTION = os.getenv("PRODUCT_COLLECTION", "product")
@@ -36,8 +33,8 @@ item_enc      = None
 item_features = None
 
 # Mongo client
-mongo_client = MongoClient(MONGO_URI)
-db           = mongo_client[MONGO_DB]
+mongo_client = MongoClient(MONGO_URL)
+db = mongo_client[MONGO_DB]
 
 def train_from_scratch(start_date=None, end_date=None):
     global model, user_enc, item_enc, item_features
