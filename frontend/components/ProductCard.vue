@@ -18,6 +18,7 @@
         class="font-bold text-base font-merriweather text-gray-800 line-clamp-2">
         {{ product.name }}
       </div>
+
       <span></span>
       <!-- Product Price -->
       <div class="be-vietnam-pro text-gray-900 mt-2">

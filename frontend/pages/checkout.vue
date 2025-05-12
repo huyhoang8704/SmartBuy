@@ -3,12 +3,12 @@
     <!-- Progress Steps -->
     <div class="flex justify-center text-lg mb-8 font-merriweather">
       <NuxtLink to="/cart">
-        <div class="text-gray-400">1.Giỏ hàng</div>
+        <div class="text-gray-400">1. Giỏ hàng</div>
       </NuxtLink>
       <div class="mx-2 text-gray-400">></div>
-      <div class="text-[#00B14F] font-medium">2.Thanh toán</div>
+      <div class="text-[#00B14F] font-medium">2. Thanh toán</div>
       <div class="mx-2 text-gray-400">></div>
-      <div class="text-gray-400">3.Đặt hàng</div>
+      <div class="text-gray-400">3. Đặt hàng</div>
     </div>
 
     <n-card size="large" class="shadow-lg">
@@ -40,7 +40,7 @@
                 <img
                   :src="item.image"
                   alt="product"
-                  class="w-16 h-16 object-cover rounded items-center" />
+                  class="w-20 h-20 object-cover" />
               </div>
               <div class="col-span-6 font-medium space-y-1">
                 <div>{{ item.name }}</div>
@@ -153,6 +153,10 @@ const userInformation = ref({
   address: "",
   note: "",
 });
+
+if (checkout.selectedItems.length === 0) {
+  navigateTo("/cart");
+}
 
 // Fetch user data when component mounts
 try {
