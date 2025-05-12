@@ -14,16 +14,15 @@ import { NConfigProvider, NNotificationProvider } from "naive-ui";
 const themeOverrides = {
   common: {
     primaryColor: "#00B14F",
-
-    primaryColorPressed: "#333333", // Dark gray when pressed/clicked
+    primaryColorPressed: "#008F3E", // Slightly darker green when pressed
   },
   Button: {
-    colorHover: "#444444", // Background color on hover
-    textColorHover: "#ffffff", // Text color on hover
-    borderHover: "1px solid #666666", // Border color on hover
-    colorPressed: "#333333", // Dark gray background when pressed
-    textColorPressed: "#ffffff", // Text color when pressed
-    borderPressed: "1px solid #333333", // Border color when pressed
+    colorHover: "#00C853", // Brighter green on hover
+    textColorHover: "#ffffff", // White text on hover
+    borderHover: "1px solid #00B14F", // Green border on hover
+    colorPressed: "#008F3E", // Slightly darker green when pressed
+    textColorPressed: "#ffffff", // White text when pressed
+    borderPressed: "1px solid #008F3E", // Darker green border when pressed
   },
 };
 

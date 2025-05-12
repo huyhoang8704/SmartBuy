@@ -25,7 +25,7 @@
               Ngày đặt:
               {{ new Date(order.createdAt).toLocaleDateString("vi-VN") }}
             </div>
-            <div class="text-base text-red-500 font-semibold mt-2">
+            <div class="text-base text-[#00B14F] font-semibold mt-2">
               Tổng: {{ formatPrice(order.totalAmount) }}
             </div>
           </div>
@@ -84,7 +84,7 @@
                     : order.paymentMethod
                 }}
               </span>
-              <span class="font-semibold text-lg text-red-500">
+              <span class="font-semibold text-lg text-[#00B14F]">
                 Tổng: {{ formatPrice(order.totalAmount) }}
               </span>
             </div>

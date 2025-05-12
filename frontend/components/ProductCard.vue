@@ -12,12 +12,13 @@
     </div>
 
     <!-- Product Details -->
-    <div class="p-4">
+    <div class="p-4 text-center">
       <!-- Product Name -->
       <div
-        class="text-lg font-bold font-merriweather text-gray-800 line-clamp-2">
+        class="font-bold text-base font-merriweather text-gray-800 line-clamp-2">
         {{ product.name }}
       </div>
+      <span></span>
       <!-- Product Price -->
       <div class="be-vietnam-pro text-gray-900 mt-2">
         {{ formatPrice(product.price) }}
@@ -56,7 +57,6 @@ const onClick = () => {
   border-radius: 12px;
   transition: all 0.3s ease;
   position: relative;
-  background-color: whitesmoke;
 }
 
 .product-card::after {
@@ -65,10 +65,11 @@ const onClick = () => {
   bottom: 0;
   left: 50%;
   width: 0;
-  height: 1px;
-  background-color: #000000; /* Grab brand color, adjust as needed */
+  height: 2px;
+  background-color: #00b14f; /* Grab brand color, adjust as needed */
   transition: width 0.3s ease, left 0.3s ease;
   transform: translateX(-50%);
+  border-radius: 4px;
 }
 
 .product-card:hover {

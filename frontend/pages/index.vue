@@ -36,7 +36,7 @@
       <!-- Search Tag -->
       <div v-if="searchQuery" class="flex items-center">
         <div
-          class="bg-gray-100 rounded-md py-1 px-3 flex items-center gap-2 text-sm">
+          class="bg-[#D9FCDE] rounded-md border py-1 px-3 flex items-center gap-2 text-sm">
           <span class="font-medium text-gray-600">Tìm kiếm:</span>
           <span class="text-primary">{{ searchQuery }}</span>
           <button
@@ -61,7 +61,7 @@
         <!-- Skeleton Loader -->
         <div
           v-if="productGridLoading"
-          class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 px-8 h-fit">
+          class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 px-8 h-fit">
           <template v-for="n in pageSize" :key="n">
             <div class="rounded-lg shadow-sm p-2 animate-pulse">
               <div
@@ -86,7 +86,7 @@
         <!-- Product Grid -->
         <div
           v-else
-          class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 px-8 h-fit">
+          class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 px-8 h-fit">
           <ProductCard
             v-for="product in productsData"
             :key="product._id"
@@ -112,7 +112,7 @@
   <nbutton
     v-if="showScrollToTop"
     @click="scrollToTop"
-    class="fixed bottom-4 right-4 px-4 text-white hover:cursor-pointer hover:bg-gray-900 bg-black p-2 transition-transform transform hover:scale-110">
+    class="fixed bottom-4 rounded-sm right-4 px-4 text-white hover:cursor-pointer hover:bg-green-500 bg-[#00B14F] p-2 transition-transform transform hover:scale-110">
     Về đầu trang
   </nbutton>
 </template>
@@ -158,7 +158,7 @@ const calculatePageSize = () => {
   } else if (width < 1024) {
     itemsPerRow = 2; // Medium screens (tablet)
   } else if (width >= 1280) {
-    itemsPerRow = 4; // XL screens
+    itemsPerRow = 3; // XL screens
   }
 
   // Update pageSize: 5 rows * items per row

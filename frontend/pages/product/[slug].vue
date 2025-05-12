@@ -34,7 +34,7 @@
           {{ product.description || "Không có mô tả cho sản phẩm này." }}
         </p>
 
-        <div class="text-2xl font-extrabold text-red-500">
+        <div class="text-2xl font-extrabold text-[#00B14F]">
           {{ formatPrice(product.price) }}
         </div>
 

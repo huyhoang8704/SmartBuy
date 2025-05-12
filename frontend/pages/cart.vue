@@ -109,6 +109,7 @@
               type="primary"
               size="large"
               :loading="isLoading"
+              :disabled="getSelectedCartItems() === 0"
               @click="proceedToPayment">
               TIẾN HÀNH THANH TOÁN
             </n-button>

@@ -1,7 +1,7 @@
 <template>
   <div class="max-w-5xl mx-auto mt-6">
     <!-- Progress Steps -->
-    <div class="flex justify-center text-lg mb-8">
+    <div class="flex justify-center text-lg mb-8 font-merriweather">
       <NuxtLink to="/cart">
         <div class="text-gray-400">1.Giỏ hàng</div>
       </NuxtLink>
@@ -40,9 +40,9 @@
                 <img
                   :src="item.image"
                   alt="product"
-                  class="w-16 h-16 object-cover rounded" />
+                  class="w-16 h-16 object-cover rounded items-center" />
               </div>
-              <div class="col-span-6 font-medium">
+              <div class="col-span-6 font-medium space-y-1">
                 <div>{{ item.name }}</div>
                 <div class="text-sm text-gray-500">
                   Số lượng: {{ item.quantity }}
@@ -55,7 +55,7 @@
 
             <div class="flex justify-between py-4 mt-2 font-bold text-lg">
               <div>Tổng tiền:</div>
-              <div class="text-red-600">
+              <div class="text-[#00B14F]">
                 {{ formatPrice(checkout.totalPrice) }}
               </div>
             </div>
