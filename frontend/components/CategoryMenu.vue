@@ -1,6 +1,6 @@
 <template>
   <n-card
-    class="rounded-2xl shadow-md"
+    class="rounded-2xl shadow-md h-[calc(100vh-20vh)] overflow-auto"
     :theme-overrides="{
       Card: {
         color: '#F0FAF5',
@@ -9,7 +9,7 @@
       },
     }">
     <template #header class="">
-      <div class="category-card text-lg font-bold px-2 text-[#00B14F]">
+      <div class="category-card text-base font-bold px-2 text-[#00B14F]">
         Danh mục sản phẩm
       </div>
     </template>
