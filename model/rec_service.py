@@ -44,146 +44,118 @@ def train_from_scratch(start_date=None, end_date=None):
 
     # 1) Load user behaviors
     recs = list(db[EVENT_COLLECTION].find(
-        {}, {"userId":1, "productId":1, "action":1, "timestamp":1, "_id":0}
+        {}, {"userId": 1, "productId": 1, "action": 1, "timestamp": 1, "_id": 0}
     ))
-    # print(recs)
     pdf = pd.DataFrame(recs).rename(columns={
-        "userId":"visitorid",
-        "productId":"itemid",
-        "action":"event",
-        "timestamp":"ts"
+        "userId": "visitorid",
+        "productId": "itemid",
+        "action": "event",
+        "timestamp": "ts"
     })
     pdf["date"] = pd.to_datetime(pdf["ts"], unit="ms").dt.date
+
     if start_date and end_date:
         sd = datetime.strptime(start_date, "%Y-%m-%d").date()
-        ed = datetime.strptime(end_date,   "%Y-%m-%d").date()
-        pdf = pdf[(pdf["date"]>=sd)&(pdf["date"]<=ed)]
+        ed = datetime.strptime(end_date, "%Y-%m-%d").date()
+        pdf = pdf[(pdf["date"] >= sd) & (pdf["date"] <= ed)]
 
     pdf["visitorid"] = pdf["visitorid"].astype(str)
-    pdf["itemid"]    = pdf["itemid"].astype(str)
-    # 2) Build train/test interactions
-    weight_map = {"view":1.0,"addtocart":5.0,"transaction":7.0}
+    pdf["itemid"] = pdf["itemid"].astype(str)
+
+    # 2) Build interactions matrix
+    weight_map = {"view": 1.0, "addtocart": 5.0, "transaction": 7.0}
     pdf = pdf[pdf["event"].isin(weight_map)].copy()
     pdf = pdf.sort_values("date").reset_index(drop=True)
-    # cutoff   = int(len(pdf)*0.8)
-    df_train = pdf
-    # df_test  = pdf.iloc[cutoff:]
-    # df_test  = df_test[
-    #     df_test["visitorid"].isin(df_train["visitorid"]) &
-    #     df_test["itemid"].isin(df_train["itemid"])
-    # ]
-    user_enc = LabelEncoder().fit(df_train["visitorid"])
-    item_enc = LabelEncoder().fit(df_train["itemid"])
 
-    u_train = user_enc.transform(df_train["visitorid"])
-    i_train = item_enc.transform(df_train["itemid"])
-    # u_test  = user_enc.transform(df_test["visitorid"])
-    # i_test  = item_enc.transform(df_test["itemid"])
-
-    w_train = df_train["event"].map(weight_map).values
-    # w_test  = df_test["event"].map(weight_map).values
-
-    n_users = u_train.max()+1
-    n_items = i_train.max()+1
-
-    interactions = {
-      "train": coo_matrix((w_train,(u_train,i_train)), shape=(n_users,n_items)),
-    #   "test" : coo_matrix((w_test, (u_test, i_test )), shape=(n_users,n_items))
-    }
-
-    # 3) Load products — project `_id`, rename to `itemid`
-    # print(db[PRODUCT_COLLECTION])
+    user_enc = LabelEncoder().fit(pdf["visitorid"])
+    
+    # Load full product list (not just products in behavior logs)
     prod_recs = list(db[PRODUCT_COLLECTION].find(
-        {}, {
-           "_id": 1,
-           "name": 1,
-           "description": 1,
-           "category": 1,
-           "brand_name": 1
-        }
+        {}, {"_id": 1, "name": 1, "description": 1, "category": 1, "brand_name": 1}
     ))
-    prod = pd.DataFrame(prod_recs)
-    prod = prod.rename(columns={"_id":"itemid"})
-    # print(prod)
-    # cast ObjectId to str if needed
+    prod = pd.DataFrame(prod_recs).rename(columns={"_id": "itemid"})
     prod["itemid"] = prod["itemid"].astype(str)
 
-    # keep only train items
-    prod = prod[prod["itemid"].isin(df_train["itemid"].unique())]
+    item_enc = LabelEncoder().fit(prod["itemid"])  # Encode full products
 
-    # 4) Categorical item features
+    u_train = user_enc.transform(pdf["visitorid"])
+    i_train = item_enc.transform(pdf["itemid"])
+    w_train = pdf["event"].map(weight_map).values
+
+    n_users = len(user_enc.classes_)
+    n_items = len(item_enc.classes_)
+
+    interactions = coo_matrix((w_train, (u_train, i_train)), shape=(n_users, n_items))
+
+    # 3) Build item features for all products
     cat_frames = []
-    for col in ("category","brand_name"):
+    for col in ("category", "brand_name"):
         if col in prod.columns:
-            tmp = prod[["itemid",col]].copy()
+            tmp = prod[["itemid", col]].copy()
             tmp["property"] = col
-            tmp["value"]    = tmp[col].astype(str)
-            cat_frames.append(tmp[["itemid","property","value"]])
-    props = pd.concat(cat_frames, ignore_index=True)
-    props["feat"] = props["property"] + "_" + props["value"]
+            tmp["value"] = tmp[col].astype(str)
+            cat_frames.append(tmp[["itemid", "property", "value"]])
 
-    feat_enc = LabelEncoder().fit(props["feat"])
-    f_idx    = feat_enc.transform(props["feat"])
-    n_feats  = len(feat_enc.classes_)
-    item_idx = item_enc.transform(props["itemid"])
+    if cat_frames:
+        props = pd.concat(cat_frames, ignore_index=True)
+        props["feat"] = props["property"] + "_" + props["value"]
+        feat_enc = LabelEncoder().fit(props["feat"])
+        f_idx = feat_enc.transform(props["feat"])
+        n_feats = len(feat_enc.classes_)
+        item_idx = item_enc.transform(props["itemid"])
+        cat_feats = coo_matrix(
+            (np.ones(len(props), dtype=np.int8), (item_idx, f_idx)),
+            shape=(n_items, n_feats)
+        ).tocsr()
+    else:
+        cat_feats = coo_matrix((n_items, 0))
 
-    cat_feats = coo_matrix(
-        (np.ones(len(props),dtype=np.int8),(item_idx,f_idx)),
-        shape=(n_items,n_feats)
-    ).tocsr()
-
-    # 5) Textual item features
+    # 4) Textual item features (name + description + category)
     ordered = (
-      prod
-      .set_index("itemid")
-      .reindex(item_enc.classes_)
-      .fillna({"name":"","description":"","category":""})
+        prod.set_index("itemid")
+        .reindex(item_enc.classes_)
+        .fillna({"name": "", "description": "", "category": ""})
     )
     texts = [
-      f"{r.name} {r.description} {r.category}".strip()
-      for r in ordered.itertuples()
+        f"{r.name} {r.description} {r.category}".strip()
+        for r in ordered.itertuples()
     ]
+
     if not any(texts):
-        # create an (n_items x 0) empty sparse matrix
         text_feats = coo_matrix((n_items, 0))
     else:
-        tfidf      = TfidfVectorizer(max_features=2000, stop_words="english")
+        tfidf = TfidfVectorizer(max_features=2000, stop_words="english")
         text_feats = tfidf.fit_transform(texts)
-    # tfidf      = TfidfVectorizer(max_features=2000, stop_words="english")
-    # text_feats = tfidf.fit_transform(texts)
 
-    # 6) Combine into final item_features
+    # 5) Final item_features matrix
     item_features = hstack([cat_feats, text_feats], format="csr")
 
-    # 7) Train LightFM
+    # 6) Train LightFM model
     m = LightFM(no_components=5, loss="warp")
-    m.fit(interactions["train"], item_features=item_features,
-          epochs=100, num_threads=4)
+    m.fit(interactions, item_features=item_features, epochs=100, num_threads=4)
 
-    # 8) Evaluate
-    train_auc = auc_score(m, interactions["train"], item_features=item_features).mean()
-    # test_auc  = auc_score(m, interactions["test"],  item_features=item_features).mean()
-    # print(f"[retrain] Train AUC {train_auc:.4f}  Test AUC {test_auc:.4f}")
-    # log AUC to MongoDB
+    # 7) Evaluate (Train AUC only, since no Test set now)
+    train_auc = auc_score(m, interactions, item_features=item_features).mean()
     db["model_metrics"].insert_one({
-    "timestamp": datetime.now(timezone.utc),
-    "train_auc": float(train_auc),
-    "n_users": int(n_users),
-    "n_items": int(n_items),
+        "timestamp": datetime.now(timezone.utc),
+        "train_auc": float(train_auc),
+        "n_users": int(n_users),
+        "n_items": int(n_items),
     })
-    # 9) Persist
-    with open(MODEL_PATH,"wb") as f:
+
+    # 8) Save Model
+    with open(MODEL_PATH, "wb") as f:
         pickle.dump({
-          "model": m,
-          "user_enc": user_enc,
-          "item_enc": item_enc,
-          "item_features": item_features
+            "model": m,
+            "user_enc": user_enc,
+            "item_enc": item_enc,
+            "item_features": item_features
         }, f)
 
-    # 10) Hot-swap globals
+    # 9) Hot-swap globals
     model = m
     globals().update(locals())
-    print("[retrain] Saved model and encoders")
+    print("[retrain] Saved model and encoders with FULL products list.")
 
 # Scheduler for daily retrain
 scheduler = BackgroundScheduler()
@@ -226,7 +198,7 @@ def recommend(user_id: str, k: int = 10):
     
     idx = user_enc.transform([user_id])[0]
     n_items = item_enc.classes_.shape[0]
-    k = min(k, n_items)
+    k = n_items
 
     user_ids = np.full(n_items, idx, dtype=np.int32)
     item_ids = np.arange(n_items, dtype=np.int32)
@@ -259,7 +231,7 @@ def log_event(b: Behavior):
     # Tiếp tục cập nhật mô hình
     u_idx = user_enc.transform([b.userId])[0]
     i_idx = item_enc.transform([b.productId])[0]
-    weight_map = {"view": 1.0, "addtocart": 3.0,  "transaction": 5.0}
+    weight_map = {"view": 1.0, "addtocart": 5.0,  "transaction": 7.0}
     weight = weight_map[b.action]
 
     interaction = coo_matrix(
