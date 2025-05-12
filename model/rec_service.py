@@ -226,7 +226,7 @@ def recommend(user_id: str, k: int = 10):
     
     idx = user_enc.transform([user_id])[0]
     n_items = item_enc.classes_.shape[0]
-    k = min(k, n_items)
+    k = n_items
 
     user_ids = np.full(n_items, idx, dtype=np.int32)
     item_ids = np.arange(n_items, dtype=np.int32)

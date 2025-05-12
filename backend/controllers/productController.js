@@ -53,7 +53,8 @@ const createManyProducts = async (req, res) => {
                 category: product.category,
                 price: product.price,
                 thumbnail_url: product.thumbnail_url,
-                brand_name: product.brand_name
+                brand_name: product.brand_name,
+                rating: product.rating,
             });
 
             const savedProduct = await newProduct.save();
