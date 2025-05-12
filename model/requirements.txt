@@ -10,4 +10,5 @@ scikit-learn
 uvicorn[standard]
 redis
 pydantic
+dotenv
 

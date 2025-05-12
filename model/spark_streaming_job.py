@@ -5,6 +5,12 @@ from pymongo import MongoClient
 import requests
 from bson import ObjectId
 from datetime import timezone, datetime
+from dotenv import load_dotenv
+import os
+
+# Load environment variables
+load_dotenv(dotenv_path="/app/backend/.env")
+MONGO_URL = os.getenv("MONGO_URL")
 
 # Khởi tạo Spark
 spark = SparkSession.builder \
@@ -63,7 +69,7 @@ def write_to_mongo(batch_df, batch_id):
         return
 
     try:
-        client = MongoClient("mongodb+srv://huyhoang8704:huyhoang8704@cluster0.zpf0zj3.mongodb.net/ecommerce?retryWrites=true&w=majority&appName=Cluster0")
+        client = MongoClient(MONGO_URL)
         db = client["ecommerce"]
         db["user_behaviors"].insert_many(transformed)
         client.close()
