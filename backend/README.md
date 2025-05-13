@@ -47,4 +47,10 @@ API sẽ chạy tại `http://localhost:4000`.
 <!-- 
 docker compose down --volumes --remove-orphans
 docker compose up --build
+docker exec -it redis-cache redis-cli
+127.0.0.1:6379> KEYS *
+1) "products:user:123:page:1:limit:15:sort:price:asc"
+127.0.0.1:6379> GET "products:user:123:page:1:limit:15:sort:price:asc"
+
+
  -->

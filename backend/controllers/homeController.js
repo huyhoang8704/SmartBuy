@@ -187,6 +187,15 @@ const getProductsList = async (req, res) => {
     try {
         // Nếu có userId => gọi recommendation
         if (userId) {
+
+            // Check Redis cache
+            const cacheKey = `products:user:${userId}:page:${page}:limit:${limit}:sort:${sortKey}:${sortValue}`;
+            const cachedData = await redisClient.get(cacheKey);
+
+            if (cachedData) {
+                return res.status(200).json(JSON.parse(cachedData));
+            }
+            // Fetch service recommendation
             const response = await axios.get("http://model:8000/recommend/" + userId);
             const { user, recommendations } = response.data;
 
@@ -225,13 +234,17 @@ const getProductsList = async (req, res) => {
             const totalItems = finalProducts.length;
             const totalPages = Math.ceil(totalItems / limit);
 
-            return res.status(200).json({
+            const responseData = {
                 success: true,
                 user,
                 totalItems,
                 totalPages,
                 products: paginatedProducts,
-            });
+            };
+
+            await redisClient.setEx(cacheKey, 900, JSON.stringify(responseData)); // Cache trong 15 phút
+
+            return res.status(200).json(responseData);
 
         } else {
             // Không có userId => gọi index logic
