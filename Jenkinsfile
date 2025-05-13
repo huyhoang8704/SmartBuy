@@ -33,14 +33,14 @@ pipeline {
             steps {
                 withDockerRegistry(credentialsId: 'docker-hub', url: 'https://index.docker.io/v1/') {
                     echo "Building Docker image..."
-                    // dir('backend') {
-                    //     sh 'docker build -t huyhoang8704/grabbootcamp:latest .'
-                    // }
+                    dir('backend') {
+                        sh 'docker build -t huyhoang8704/grabbootcamp:latest .'
+                    }
 
                     echo "Pushing Docker image to Docker Hub..."
-                    // dir('backend') {
-                    //     sh 'docker push huyhoang8704/grabbootcamp:latest'
-                    // }
+                    dir('backend') {
+                        sh 'docker push huyhoang8704/grabbootcamp:latest'
+                    }
                     echo "Deploying to production server..."
                 }
             }
