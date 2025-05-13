@@ -102,8 +102,7 @@
           v-model:page="currentPage"
           :page-count="pageCount"
           :page-size="pageSize"
-          size="large"
-          round />
+          size="large" />
       </div>
     </div>
   </div>
@@ -196,8 +195,8 @@ const sortOptions = [
   { label: "Mặc định", value: "" }, // Updated value to null for default
   { label: "Giá: Thấp đến cao", value: "price-asc" },
   { label: "Giá: Cao đến Thấp", value: "price-desc" },
-  { label: "Đánh giá: Thấp đến cao", value: "rating-asc" },
-  { label: "Đánh giá: Cao đến Thấp", value: "rating-desc" },
+  // { label: "Đánh giá: Thấp đến cao", value: "rating-asc" },
+  // { label: "Đánh giá: Cao đến Thấp", value: "rating-desc" },
 ];
 
 // Split the selected sort option into sortKey and sortValue

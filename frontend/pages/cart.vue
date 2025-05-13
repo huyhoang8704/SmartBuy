@@ -15,7 +15,7 @@
           <n-empty description="Giỏ hàng trống" />
           <div class="flex justify-center mt-4">
             <NuxtLink to="/">
-              <n-button size="medium" round>Tiếp tục mua hàng</n-button>
+              <n-button size="medium">Tiếp tục mua hàng</n-button>
             </NuxtLink>
           </div>
         </template>
@@ -32,19 +32,20 @@
           </div>
 
           <!-- Header -->
-          <div class="grid grid-cols-12 pb-3 border-b text-gray-600">
+          <div class="grid grid-cols-14 pb-3 border-b text-gray-600">
             <div class="col-span-1"></div>
-            <div class="col-span-4">Sản phẩm</div>
+            <div class="col-span-4 text-center">Sản phẩm</div>
             <div class="col-span-2 text-center">Giá</div>
             <div class="col-span-3 text-center">Số lượng</div>
-            <div class="col-span-2 text-right">Tổng phụ</div>
+            <div class="col-span-2 text-right">Thành tiền</div>
+            <div class="col-span-2 text-right"></div>
           </div>
 
           <!-- Product Items -->
           <div
             v-for="item in cart.items"
             :key="item.id"
-            class="grid grid-cols-12 items-center py-4 border-b">
+            class="grid grid-cols-14 items-center py-4 border-b">
             <div class="col-span-1 flex justify-center">
               <n-checkbox
                 color="#00B14F"
@@ -58,8 +59,8 @@
               <img
                 :src="item.image"
                 alt="product"
-                class="w-16 h-16 object-cover" />
-              <div class="font-medium">{{ item.name }}</div>
+                class="w-20 h-20 object-cover" />
+              <div class="font-medium flex-1">{{ item.name }}</div>
             </div>
 
             <div class="col-span-2 text-center">
@@ -81,9 +82,10 @@
               </div>
             </div>
 
-            <div
-              class="col-span-2 text-right flex items-center justify-end gap-4">
+            <div class="col-span-2 text-right">
               <div>{{ formatPrice(item.price * item.quantity) }}</div>
+            </div>
+            <div class="col-span-2 text-right">
               <n-button
                 type="error"
                 class="text-gray-400 hover:text-gray-700"
