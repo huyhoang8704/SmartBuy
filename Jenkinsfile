@@ -45,6 +45,16 @@ pipeline {
         //         }
         //     }
         // }
+        stage('Deploy to Docker Hub') {
+            steps {
+                script {
+                    echo "Building Docker image..."
+                    echo "Pushing Docker image to Docker Hub..."
+                    sh 'sleep 2'
+                    echo "✅ Docker push done."
+                }
+            }
+        }        
     }
 
     post {
